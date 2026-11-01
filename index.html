@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOL + SCHD 배당 복리 시뮬레이터</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN for Professional Interactive Visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen p-3 md:p-6 flex justify-center items-start">
+
+    <div class="max-w-3xl w-full bg-white rounded-2xl shadow-xl border border-slate-200/80 p-4 md:p-8 space-y-6 my-2">
+        
+        <!-- Header & Live API Sync Button -->
+        <div class="text-center space-y-3 border-b border-slate-100 pb-5">
+            <h1 class="text-xl md:text-2xl font-extrabold text-slate-950 tracking-tight">
+                SOL + SCHD 배당 복리 시뮬레이터
+            </h1>
+            <p class="text-xs md:text-sm text-slate-500 font-medium">
+                실시간 환율/시세 기반 배당 재투자(DRIP) 복리 스노우볼 정밀 분석 (배당세 15% 반영)
+            </p>
+
+            <div class="pt-1">
+                <button id="syncApiBtn" onclick="fetchLiveMarketData()" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition-all text-white text-xs md:text-sm font-semibold rounded-xl shadow-md shadow-indigo-100">
+                    <svg id="syncSpinner" class="hidden animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>⚡ 실시간 주가/환율 연동</span>
+                </button>
+                <div id="apiStatusMessage" class="text-[11px] font-medium text-slate-500 mt-2 min-h-[16px]"></div>
+            </div>
+        </div>
+
+        <!-- Scenario Preset Selector -->
+        <div class="space-y-2">
+            <label class="block text-xs font-bold text-slate-700 tracking-wide uppercase">
+                🎯 시나리오 모드 선택
+            </label>
+            <div class="grid grid-cols-3 gap-2">
+                <button type="button" class="mode-btn p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 bg-slate-50 hover:bg-slate-100 transition-all text-center" onclick="setMode('conservative', event)">
+                    🛡️ 보수형<br><span class="text-[10px] text-slate-400 font-normal">(주가4.5%/배당5%)</span>
+                </button>
+                <button type="button" class="mode-btn active p-2.5 rounded-xl border border-indigo-500 text-xs font-semibold text-indigo-700 bg-indigo-50/80 shadow-sm transition-all text-center" onclick="setMode('realistic', event)">
+                    ⚖️ 현실형<br><span class="text-[10px] text-indigo-500 font-normal">(주가6.5%/배당8%)</span>
+                </button>
+                <button type="button" class="mode-btn p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 bg-slate-50 hover:bg-slate-100 transition-all text-center" onclick="setMode('historical', event)">
+                    🚀 역사적 성과<br><span class="text-[10px] text-slate-400 font-normal">(주가7.5%/배당10%)</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Forecast Months Input with Dynamic Target Date Calculation -->
+        <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 space-y-2">
+            <div class="flex justify-between items-center">
+                <label for="futureMonths" class="text-xs font-bold text-indigo-900">
+                    🗓️ 예측 기간 ( 개월 )
+                </label>
+                <span id="targetDateBadge" class="inline-block bg-indigo-600 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-sm">
+                    2040년 11월 (14.0년 후)
+                </span>
+            </div>
+            <input type="number" id="futureMonths" min="1" max="480" step="1" oninput="update()"
+                class="w-full bg-white border border-indigo-200 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm">
+        </div>
+
+        <!-- Section 1: SOL US Dividend -->
+        <div class="space-y-3">
+            <h2 class="text-sm font-extrabold text-blue-900 flex items-center gap-1.5 border-l-4 border-blue-600 pl-2.5">
+                1. SOL 미국배당다우존스 <span class="text-xs font-medium text-slate-500">(원화 계좌 / 23년 9월~)</span>
+            </h2>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">현재 보유주수 (주)</label>
+                    <input type="text" id="solShares" value="8,587" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">현재 1주당 주가 (₩)</label>
+                    <input type="text" id="solPrice" value="13,565" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">매월 추가 적립액 (₩)</label>
+                    <input type="text" id="solMonthlyInvest" value="300,000" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">총 투자원금 (₩)</label>
+                    <input type="text" id="solPrincipal" value="96,578,626" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-blue-500">
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: SCHD Direct Investment -->
+        <div class="space-y-3">
+            <h2 class="text-sm font-extrabold text-emerald-900 flex items-center gap-1.5 border-l-4 border-emerald-600 pl-2.5">
+                2. SCHD 미국직투 <span class="text-xs font-medium text-slate-500">(달러 계좌 / 24년 3월~)</span>
+            </h2>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">현재 보유주수 (주)</label>
+                    <input type="text" id="schdShares" value="827" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">현재 1주당 주가 ($)</label>
+                    <input type="text" id="schdPrice" value="35.27" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">매월 추가 적립액 ($)</label>
+                    <input type="text" id="schdMonthlyInvest" value="150" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">적용 환율 (₩/$)</label>
+                    <input type="text" id="exchangeRate" value="1,325" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500">
+                </div>
+            </div>
+
+            <!-- SCHD Investment Principal Inputs -->
+            <div class="grid grid-cols-2 gap-3 bg-emerald-50/60 p-3.5 rounded-xl border border-emerald-200">
+                <div>
+                    <label class="block text-xs font-bold text-emerald-900 mb-1">SCHD 총 투자원금 ($)</label>
+                    <input type="text" id="schdPrincipalUSD" value="26,118.56" oninput="onSchdPrincipalUSDInput(this)" class="w-full bg-white border border-emerald-300 rounded-lg p-2 text-sm font-bold text-emerald-950 focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-emerald-900 mb-1">SCHD 총 투자원금 (₩)</label>
+                    <input type="text" id="schdPrincipalKRW" value="34,607,092" oninput="onSchdPrincipalKRWInput(this)" class="w-full bg-white border border-emerald-300 rounded-lg p-2 text-sm font-bold text-emerald-950 focus:ring-2 focus:ring-emerald-500">
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Shared Growth & Inflation Assumptions -->
+        <div class="space-y-3">
+            <h2 class="text-sm font-extrabold text-amber-900 flex items-center gap-1.5 border-l-4 border-amber-500 pl-2.5">
+                3. 성장, 배당 및 물가상승률 (공동 적용)
+            </h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">연 배당수익률 (%)</label>
+                    <input type="text" id="divYield" value="3.5" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-amber-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">연 배당성장률 (%)</label>
+                    <input type="text" id="divGrowth" value="8.0" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-amber-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">주가 상승률 (CAGR%)</label>
+                    <input type="text" id="cagr" value="6.5" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-amber-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-rose-700 mb-1">🎈 연 물가상승률 (%)</label>
+                    <input type="text" id="inflationRate" value="3.0" oninput="formatAndCalculate(this)" class="w-full bg-rose-50/60 border border-rose-200 rounded-lg p-2 text-sm font-bold text-rose-900 focus:bg-white focus:ring-1 focus:ring-rose-500">
+                </div>
+            </div>
+        </div>
+
+        <!-- Consolidated Dashboard & DRIP Comparison -->
+        <div class="pt-2 space-y-4">
+            
+            <!-- Grand Total Summary Card -->
+            <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-5 md:p-6 text-white shadow-xl space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <span class="text-xs font-bold uppercase tracking-wider text-indigo-300 flex items-center gap-1.5">
+                        🌟 전체 계좌 통합 최종 성과
+                    </span>
+                    <span class="text-[10px] text-emerald-300 bg-emerald-950/80 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-semibold">
+                        🔄 배당 재투자(DRIP) 적용
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-1 bg-white/5 p-3.5 rounded-xl border border-white/10">
+                        <div class="text-xs text-slate-300 font-medium">전체 통합 예상 평가금액</div>
+                        <div class="text-xl md:text-2xl font-extrabold text-indigo-200 tracking-tight" id="grandValuation">
+                            ₩ 0
+                        </div>
+                        <div class="text-[11px] text-rose-300 font-medium pt-0.5" id="realGrandValuation">
+                            🛒 현재 가치 환산: ₩ 0
+                        </div>
+                    </div>
+                    <div class="space-y-1 bg-white/5 p-3.5 rounded-xl border border-white/10">
+                        <div class="text-xs text-emerald-300 font-medium">예상 월 환산 배당금</div>
+                        <div class="text-xl md:text-2xl font-extrabold text-emerald-300 tracking-tight" id="grandMonthlyDiv">
+                            ₩ 0 / 월
+                        </div>
+                        <div class="text-[11px] text-rose-300 font-medium pt-0.5" id="realGrandMonthlyDiv">
+                            🛒 현재 가치 환산: ₩ 0 / 월
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 pt-1 border-t border-slate-800/80">
+                    <div class="bg-white/5 p-3 rounded-xl border border-white/10">
+                        <div class="text-[11px] text-slate-400 font-semibold mb-0.5">총 투입 원금 (SOL + SCHD 환산)</div>
+                        <div class="text-sm md:text-base font-bold text-slate-200" id="grandPrincipal">
+                            ₩ 0
+                        </div>
+                    </div>
+                    <div class="bg-indigo-500/10 p-3 rounded-xl border border-indigo-400/20">
+                        <div class="text-[11px] text-indigo-300 font-semibold mb-0.5">🔄 누적 재투자 배당금 총액</div>
+                        <div class="text-sm md:text-base font-bold text-indigo-200" id="grandReinvestedDiv">
+                            ₩ 0
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 📊 다크 테마 시각화 차트 컴포넌트 -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6 space-y-4 shadow-xl">
+                <div class="space-y-3 border-b border-slate-800 pb-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="flex gap-2 bg-slate-950 p-1 rounded-xl border border-slate-800/80">
+                            <button id="chartTabAsset" onclick="switchChartTab('asset')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold transition-all shadow-md">
+                                📊 연도별 자산 성장 (Stacked Bar)
+                            </button>
+                            <button id="chartTabDiv" onclick="switchChartTab('div')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-400 hover:text-white text-xs font-medium transition-all">
+                                💰 연도별 예상 월 배당금 흐름
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-400">
+                        * 각 연도 차트 바에 마우스를 올리면 세부 데이터를 확인 가능합니다.
+                    </p>
+                </div>
+
+                <div class="relative w-full h-64 md:h-80">
+                    <canvas id="snowballChart"></canvas>
+                </div>
+            </div>
+
+            <!-- DRIP Comparison Impact Card -->
+            <div class="bg-gradient-to-r from-emerald-900/10 via-teal-900/5 to-emerald-900/10 border border-emerald-200 rounded-2xl p-4 md:p-5 space-y-3">
+                <div class="flex items-center justify-between border-b border-emerald-100 pb-2">
+                    <h3 class="text-xs md:text-sm font-extrabold text-emerald-950 flex items-center gap-1.5">
+                        ⚡ 배당 재투자(DRIP) 복리 분석
+                    </h3>
+                    <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-md" id="dripAlphaBadge">
+                        + ₩ 0 추가 증대
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-1.5">
+                        <div class="font-bold text-slate-600 text-xs border-b border-slate-100 pb-1 flex justify-between">
+                            <span>💸 배당 미재투자 (현금 수령)</span>
+                            <span class="text-[10px] text-slate-400">단순 적립만 진행</span>
+                        </div>
+                        <div class="flex justify-between text-slate-700">
+                            <span>최종 자산:</span>
+                            <span class="font-bold" id="noDripVal">₩ 0</span>
+                        </div>
+                        <div class="flex justify-between text-slate-700">
+                            <span>월 배당금:</span>
+                            <span class="font-bold text-slate-800" id="noDripDiv">₩ 0 / 월</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-emerald-500/10 p-3 rounded-xl border border-emerald-300/60 space-y-1.5">
+                        <div class="font-bold text-emerald-900 text-xs border-b border-emerald-200/50 pb-1 flex justify-between">
+                            <span>🔄 배당 재투자 (DRIP 적용)</span>
+                            <span class="text-[10px] text-emerald-700 font-semibold">스노우볼 복리</span>
+                        </div>
+                        <div class="flex justify-between text-emerald-950">
+                            <span>최종 자산:</span>
+                            <span class="font-extrabold text-emerald-800" id="withDripVal">₩ 0</span>
+                        </div>
+                        <div class="flex justify-between text-emerald-950">
+                            <span>월 배당금:</span>
+                            <span class="font-extrabold text-emerald-700" id="withDripDiv">₩ 0 / 월</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Individual Breakdown Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="bg-blue-50/50 border border-blue-100 rounded-xl p-4 space-y-2.5">
+                    <div class="text-xs font-bold text-blue-900 border-b border-blue-100 pb-1.5 flex justify-between items-center">
+                        <span>🇰🇷 SOL 미국배당다우존스 상세</span>
+                        <span class="text-[10px] text-blue-700 font-bold" id="solResShares">0 주</span>
+                    </div>
+                    <div class="space-y-1">
+                        <div class="text-xs text-slate-500">평가금액</div>
+                        <div class="text-base font-extrabold text-blue-950" id="solResVal">₩ 0</div>
+                        <div class="text-xs text-emerald-700 font-bold" id="solResDiv">월 배당: ₩ 0 / 월</div>
+                    </div>
+                    <div class="bg-white/80 p-2.5 rounded-lg border border-blue-100 text-[11px] space-y-1">
+                        <div class="flex justify-between text-slate-600">
+                            <span>재투자된 누적 배당금:</span>
+                            <span class="font-bold text-blue-900" id="solReinvestedDiv">₩ 0</span>
+                        </div>
+                        <div class="flex justify-between text-slate-600">
+                            <span>DRIP으로 얻은 추가 주식:</span>
+                            <span class="font-bold text-emerald-600" id="solDripShares">+ 0 주</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-emerald-50/50 border border-emerald-100 rounded-xl p-4 space-y-2.5">
+                    <div class="text-xs font-bold text-emerald-900 border-b border-emerald-100 pb-1.5 flex justify-between items-center">
+                        <span>🇺🇸 SCHD 직투 상세</span>
+                        <span class="text-[10px] text-emerald-700 font-bold" id="schdResShares">0 주</span>
+                    </div>
+                    <div class="space-y-1">
+                        <div class="text-xs text-slate-500">평가금액</div>
+                        <!-- 수정됨: 잘못된 id="$ 0"을 정상적인 id로 교체 -->
+                        <div class="text-base font-extrabold text-emerald-950" id="schdResVal">$ 0</div>
+                        <div class="text-xs text-emerald-700 font-bold" id="schdResDiv">월 배당: $ 0 / 월</div>
+                    </div>
+                    <div class="bg-white/80 p-2.5 rounded-lg border border-emerald-100 text-[11px] space-y-1">
+                        <div class="flex justify-between text-slate-600">
+                            <span>재투자된 누적 배당금:</span>
+                            <span class="font-bold text-emerald-900" id="schdReinvestedDiv">$ 0</span>
+                        </div>
+                        <div class="flex justify-between text-slate-600">
+                            <span>DRIP으로 얻은 추가 주식:</span>
+                            <span class="font-bold text-emerald-600" id="schdDripShares">+ 0 주</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        let isSyncingSchdPrincipal = false;
+        const TAX_RATE = 0.15; // 배당소득세 15% 반영
+        let chartInstance = null;
+        let currentChartMode = 'asset'; // 'asset' or 'div'
+        let yearlyChartData = [];
+
+        function initRetirementMonths() {
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth() + 1;
+
+            const targetYear = 2040;
+            const targetMonth = 11;
+
+            const totalCurrentMonths = currentYear * 12 + currentMonth;
+            const totalTargetMonths = targetYear * 12 + targetMonth;
+
+            let diffMonths = totalTargetMonths - totalCurrentMonths;
+            if (diffMonths < 1) diffMonths = 1;
+
+            document.getElementById('futureMonths').value = diffMonths;
+        }
+
+        function parseFormattedNumber(val) {
+            if (!val) return 0;
+            const cleanStr = String(val).replace(/,/g, '');
+            return parseFloat(cleanStr) || 0;
+        }
+
+        function formatWithCommas(val) {
+            if (val === null || val === undefined || isNaN(val)) return '';
+            const parts = String(val).split('.');
+            parts[0] = parts[0].replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            return parts.length > 1 ? `${parts[0]}.${parts[1]}` : parts[0];
+        }
+
+        function formatKRWShort(val) {
+            if (val >= 100000000) {
+                return (val / 100000000).toFixed(1) + '억원';
+            } else if (val >= 10000) {
+                return Math.round(val / 10000).toLocaleString() + '만원';
+            }
+            return Math.round(val).toLocaleString() + '원';
+        }
+
+        function formatAndCalculate(inputElem) {
+            const cursorPosition = inputElem.selectionStart;
+            const originalLength = inputElem.value.length;
+
+            const numericValue = parseFormattedNumber(inputElem.value);
+            inputElem.value = formatWithCommas(numericValue);
+
+            const newLength = inputElem.value.length;
+            const newCursorPosition = cursorPosition + (newLength - originalLength);
+            inputElem.setSelectionRange(newCursorPosition, newCursorPosition);
+
+            update();
+        }
+
+        function onSchdPrincipalUSDInput(inputElem) {
+            if (isSyncingSchdPrincipal) return;
+            isSyncingSchdPrincipal = true;
+
+            const cursorPosition = inputElem.selectionStart;
+            const originalLength = inputElem.value.length;
+
+            const cleanStr = String(inputElem.value).replace(/[^0-9.]/g, '');
+            const parts = cleanStr.split('.');
+            if (parts.length > 2) parts.length = 2;
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            if (parts[1]) parts[1] = parts[1].substring(0, 2);
+            inputElem.value = parts.join('.');
+
+            const usdVal = parseFormattedNumber(inputElem.value);
+            const exRate = parseFormattedNumber(document.getElementById('exchangeRate').value) || 1325;
+            const krwVal = Math.round(usdVal * exRate);
+
+            document.getElementById('schdPrincipalKRW').value = formatWithCommas(krwVal);
+
+            const newLength = inputElem.value.length;
+            const newCursorPosition = cursorPosition + (newLength - originalLength);
+            inputElem.setSelectionRange(newCursorPosition, newCursorPosition);
+
+            isSyncingSchdPrincipal = false;
+            update();
+        }
+
+        function onSchdPrincipalKRWInput(inputElem) {
+            if (isSyncingSchdPrincipal) return;
+            isSyncingSchdPrincipal = true;
+
+            const cursorPosition = inputElem.selectionStart;
+            const originalLength = inputElem.value.length;
+
+            const numericVal = parseFormattedNumber(inputElem.value);
+            inputElem.value = formatWithCommas(numericVal);
+
+            const exRate = parseFormattedNumber(document.getElementById('exchangeRate').value) || 1325;
+            const usdVal = exRate > 0 ? numericVal / exRate : 0;
+
+            const parts = usdVal.toFixed(2).split('.');
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            document.getElementById('schdPrincipalUSD').value = parts.join('.');
+
+            const newLength = inputElem.value.length;
+            const newCursorPosition = cursorPosition + (newLength - originalLength);
+            inputElem.setSelectionRange(newCursorPosition, newCursorPosition);
+
+            isSyncingSchdPrincipal = false;
+            update();
+        }
+
+        function setMode(mode, evt) {
+            const btns = document.querySelectorAll('.mode-btn');
+            btns.forEach(b => {
+                b.classList.remove('active', 'border-indigo-500', 'bg-indigo-50/80', 'text-indigo-700', 'shadow-sm');
+                b.classList.add('border-slate-200', 'bg-slate-50', 'text-slate-600');
+            });
+
+            const targetBtn = evt ? evt.currentTarget : event.currentTarget;
+            targetBtn.classList.remove('border-slate-200', 'bg-slate-50', 'text-slate-600');
+            targetBtn.classList.add('active', 'border-indigo-500', 'bg-indigo-50/80', 'text-indigo-700', 'shadow-sm');
+
+            if (mode === 'conservative') {
+                document.getElementById('cagr').value = 4.5;
+                document.getElementById('divGrowth').value = 5.0;
+            } else if (mode === 'realistic') {
+                document.getElementById('cagr').value = 6.5;
+                document.getElementById('divGrowth').value = 8.0;
+            } else if (mode === 'historical') {
+                document.getElementById('cagr').value = 7.5;
+                document.getElementById('divGrowth').value = 10.0;
+            }
+            update();
+        }
+
+        function switchChartTab(type) {
+            currentChartMode = type;
+            const tabAsset = document.getElementById('chartTabAsset');
+            const tabDiv = document.getElementById('chartTabDiv');
+
+            if (type === 'asset') {
+                tabAsset.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold transition-all shadow-md";
+                tabDiv.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-400 hover:text-white text-xs font-medium transition-all";
+            } else {
+                tabDiv.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold transition-all shadow-md";
+                tabAsset.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-400 hover:text-white text-xs font-medium transition-all";
+            }
+            renderChart();
+        }
+
+        async function fetchLiveMarketData() {
+            const syncBtn = document.getElementById('syncApiBtn');
+            const spinner = document.getElementById('syncSpinner');
+            const statusMsg = document.getElementById('apiStatusMessage');
+
+            syncBtn.disabled = true;
+            spinner.classList.remove('hidden');
+            statusMsg.className = "text-[11px] font-medium text-blue-600 mt-2";
+            statusMsg.innerText = "최신 실시간 시세 및 환율 정보를 조회하는 중입니다...";
+
+            let fetchedFx = false;
+            let fetchedSol = false;
+            let fetchedSchd = false;
+
+            try {
+                const fxResponse = await fetch('https://open.er-api.com/v6/latest/USD');
+                if (fxResponse.ok) {
+                    const fxData = await fxResponse.json();
+                    if (fxData && fxData.rates && fxData.rates.KRW) {
+                        const krwRate = Math.round(fxData.rates.KRW);
+                        document.getElementById('exchangeRate').value = formatWithCommas(krwRate);
+                        fetchedFx = true;
+                    }
+                }
+            } catch (e) {
+                console.warn("Exchange rate API error:", e);
+            }
+
+            async function fetchWithFallback(targetUrl) {
+                const proxies = [
+                    (url) => 'https://api.allorigins.win/get?url=' + encodeURIComponent(url),
+                    (url) => 'https://corsproxy.io/?' + encodeURIComponent(url),
+                    (url) => 'https://thingproxy.freeboard.io/fetch/' + url
+                ];
+
+                for (let getProxyUrl of proxies) {
+                    try {
+                        const proxyUrl = getProxyUrl(targetUrl);
+                        const response = await fetch(proxyUrl);
+                        if (!response.ok) continue;
+                        
+                        const data = await response.json();
+                        let content = data.contents ? JSON.parse(data.contents) : data;
+                        return content;
+                    } catch (err) {
+                        continue;
+                    }
+                }
+                throw new Error("All proxies failed");
+            }
+
+            try {
+                const solUrl = 'https://query1.finance.yahoo.com/v8/finance/chart/446720.KS?interval=1d&range=1d';
+                const parsed = await fetchWithFallback(solUrl);
+                const quote = parsed?.chart?.result?.[0]?.meta?.regularMarketPrice;
+                if (quote) {
+                    const roundedSol = Math.round(quote);
+                    document.getElementById('solPrice').value = formatWithCommas(roundedSol);
+                    fetchedSol = true;
+                }
+            } catch (e) {
+                console.warn("SOL price fetch error:", e);
+            }
+
+            try {
+                const schdUrl = 'https://query1.finance.yahoo.com/v8/finance/chart/SCHD?interval=1d&range=1d';
+                const parsed = await fetchWithFallback(schdUrl);
+                const quote = parsed?.chart?.result?.[0]?.meta?.regularMarketPrice;
+                if (quote) {
+                    document.getElementById('schdPrice').value = Number(quote).toFixed(2);
+                    fetchedSchd = true;
+                }
+            } catch (e) {
+                console.warn("SCHD price fetch error:", e);
+            }
+
+            spinner.classList.add('hidden');
+            syncBtn.disabled = false;
+
+            if (fetchedFx || fetchedSol || fetchedSchd) {
+                statusMsg.className = "text-[11px] font-medium text-emerald-600 mt-2";
+                statusMsg.innerText = `✅ 실시간 연동 완료! (환율: ₩${document.getElementById('exchangeRate').value} / SOL: ₩${document.getElementById('solPrice').value} / SCHD: $${document.getElementById('schdPrice').value})`;
+            } else {
+                statusMsg.className = "text-[11px] font-medium text-amber-600 mt-2";
+                statusMsg.innerText = "⚠️ 네트워크 환경에 의해 기존 입력값이 유지되었습니다.";
+            }
+
+            update();
+        }
+
+        function update() {
+            const monthsInput = parseFloat(document.getElementById('futureMonths').value) || 0;
+            const yearsNum = monthsInput / 12;
+
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth() + 1;
+
+            const totalTargetMonths = (currentYear * 12 + (currentMonth - 1)) + Math.round(monthsInput);
+            const targetYear = Math.floor(totalTargetMonths / 12);
+            const targetMonth = (totalTargetMonths % 12) + 1;
+
+            document.getElementById('targetDateBadge').innerText = `${targetYear}년 ${targetMonth}월 (${yearsNum.toFixed(1)}년 후)`;
+
+            const exRate = parseFormattedNumber(document.getElementById('exchangeRate').value) || 1325;
+            const initialDivYield = (parseFloat(document.getElementById('divYield').value) || 3.5) / 100;
+            const divGrowthRate = (parseFloat(document.getElementById('divGrowth').value) || 8.0) / 100;
+            const cagrInput = parseFloat(document.getElementById('cagr').value) || 6.5;
+            const cagr = cagrInput / 100;
+
+            const inflationInput = parseFloat(document.getElementById('inflationRate').value) || 3.0;
+            const inflationRate = inflationInput / 100;
+
+            const monthlyCagr = Math.pow(1 + cagr, 1 / 12) - 1;
+            const monthlyDivGrowth = Math.pow(1 + divGrowthRate, 1 / 12);
+
+            const initialSolShares = parseFormattedNumber(document.getElementById('solShares').value) || 0;
+            let solPrice = parseFormattedNumber(document.getElementById('solPrice').value) || 13565;
+            const solMonthlyInvest = parseFormattedNumber(document.getElementById('solMonthlyInvest').value) || 0;
+            let solPrincipal = parseFormattedNumber(document.getElementById('solPrincipal').value) || 0;
+
+            const initialSchdShares = parseFormattedNumber(document.getElementById('schdShares').value) || 0;
+            let schdPrice = parseFormattedNumber(document.getElementById('schdPrice').value) || 35.27;
+            const schdMonthlyInvest = parseFormattedNumber(document.getElementById('schdMonthlyInvest').value) || 0;
+            let schdPrincipalUSD = parseFormattedNumber(document.getElementById('schdPrincipalUSD').value) || 26118.56;
+
+            let solSharesDRIP = initialSolShares;
+            let solPriceDRIP = solPrice;
+            let solDivYieldDRIP = initialDivYield;
+            let solAccumDivDRIP = 0;
+            let totalSolReinvestedDivKRW = 0;
+
+            let schdSharesDRIP = initialSchdShares;
+            let schdPriceDRIP = schdPrice;
+            let schdDivYieldDRIP = initialDivYield;
+            let schdAccumDivDRIP = 0;
+            let totalSchdReinvestedDivUSD = 0;
+
+            yearlyChartData = [];
+
+            for (let m = 1; m <= monthsInput; m++) {
+                solPriceDRIP *= (1 + monthlyCagr);
+                solDivYieldDRIP *= monthlyDivGrowth;
+                solSharesDRIP += (solMonthlyInvest / solPriceDRIP);
+
+                const solMonthlyGrossDiv = solSharesDRIP * solPriceDRIP * (solDivYieldDRIP / 12);
+                solAccumDivDRIP += solMonthlyGrossDiv * (1 - TAX_RATE);
+
+                if (m % 3 === 0 && solAccumDivDRIP > 0) {
+                    const boughtShares = solAccumDivDRIP / solPriceDRIP;
+                    solSharesDRIP += boughtShares;
+                    totalSolReinvestedDivKRW += solAccumDivDRIP;
+                    solAccumDivDRIP = 0;
+                }
+
+                schdPriceDRIP *= (1 + monthlyCagr);
+                schdDivYieldDRIP *= monthlyDivGrowth;
+                schdSharesDRIP += (schdMonthlyInvest / schdPriceDRIP);
+
+                const schdMonthlyGrossDiv = schdSharesDRIP * schdPriceDRIP * (schdDivYieldDRIP / 12);
+                schdAccumDivDRIP += schdMonthlyGrossDiv * (1 - TAX_RATE);
+
+                if (m % 3 === 0 && schdAccumDivDRIP > 0) {
+                    const boughtShares = schdAccumDivDRIP / schdPriceDRIP;
+                    schdSharesDRIP += boughtShares;
+                    totalSchdReinvestedDivUSD += schdAccumDivDRIP;
+                    schdAccumDivDRIP = 0;
+                }
+
+                if (m % 12 === 0 || m === monthsInput) {
+                    const curYear = currentYear + Math.floor((currentMonth - 1 + m) / 12);
+                    const curYearLabel = `${curYear}년`;
+
+                    const solVal = solSharesDRIP * solPriceDRIP;
+                    const schdValKRW = schdSharesDRIP * schdPriceDRIP * exRate;
+                    const totalValuation = solVal + schdValKRW;
+
+                    const cumulativeSolInvested = solPrincipal + (solMonthlyInvest * m);
+                    const cumulativeSchdInvestedKRW = (schdPrincipalUSD + (schdMonthlyInvest * m)) * exRate;
+                    const totalPrincipal = cumulativeSolInvested + cumulativeSchdInvestedKRW;
+
+                    const totalReinvested = totalSolReinvestedDivKRW + (totalSchdReinvestedDivUSD * exRate);
+                    const capitalGain = Math.max(0, totalValuation - totalPrincipal - totalReinvested);
+
+                    const currentMonthlyDivNominal = (solVal * solDivYieldDRIP / 12 * (1 - TAX_RATE)) + (schdValKRW * schdDivYieldDRIP / 12 * (1 - TAX_RATE));
+                    const yearsPassed = m / 12;
+                    const currentMonthlyDivReal = currentMonthlyDivNominal / Math.pow(1 + inflationRate, yearsPassed);
+
+                    yearlyChartData.push({
+                        yearLabel: curYearLabel,
+                        principal: Math.round(totalPrincipal),
+                        reinvestedDiv: Math.round(totalReinvested),
+                        capitalGain: Math.round(capitalGain),
+                        totalValuation: Math.round(totalValuation),
+                        monthlyDivNominal: Math.round(currentMonthlyDivNominal),
+                        monthlyDivReal: Math.round(currentMonthlyDivReal)
+                    });
+                }
+            }
+
+            const grandSolPrincipalKRW = solPrincipal + (solMonthlyInvest * monthsInput);
+            const grandSchdPrincipalUSD = schdPrincipalUSD + (schdMonthlyInvest * monthsInput);
+            const grandSchdPrincipalKRW = grandSchdPrincipalUSD * exRate;
+            const grandPrincipalKRW = grandSolPrincipalKRW + grandSchdPrincipalKRW;
+
+            const solValuationDRIP = solSharesDRIP * solPriceDRIP;
+            const solMonthlyDivDRIP = (solValuationDRIP * solDivYieldDRIP / 12) * (1 - TAX_RATE);
+
+            const schdValuationUSD_DRIP = schdSharesDRIP * schdPriceDRIP;
+            const schdMonthlyDivUSD_DRIP = (schdValuationUSD_DRIP * schdDivYieldDRIP / 12) * (1 - TAX_RATE);
+            const schdValuationKRW_DRIP = schdValuationUSD_DRIP * exRate;
+            const schdMonthlyDivKRW_DRIP = schdMonthlyDivUSD_DRIP * exRate;
+
+            const grandValuationDRIP = solValuationDRIP + schdValuationKRW_DRIP;
+            const grandMonthlyDivDRIP = solMonthlyDivDRIP + schdMonthlyDivKRW_DRIP;
+            const totalReinvestedKRW = totalSolReinvestedDivKRW + (totalSchdReinvestedDivUSD * exRate);
+
+            const inflationDiscountFactor = Math.pow(1 + inflationRate, yearsNum);
+            const realGrandValuation = grandValuationDRIP / inflationDiscountFactor;
+            const realGrandMonthlyDiv = grandMonthlyDivDRIP / inflationDiscountFactor;
+
+            let solSharesNoDRIP = initialSolShares;
+            let solPriceNoDRIP = solPrice;
+            let solDivYieldNoDRIP = initialDivYield;
+
+            let schdSharesNoDRIP = initialSchdShares;
+            let schdPriceNoDRIP = schdPrice;
+            let schdDivYieldNoDRIP = initialDivYield;
+
+            for (let m = 1; m <= monthsInput; m++) {
+                solPriceNoDRIP *= (1 + monthlyCagr);
+                solDivYieldNoDRIP *= monthlyDivGrowth;
+                solSharesNoDRIP += (solMonthlyInvest / solPriceNoDRIP);
+
+                schdPriceNoDRIP *= (1 + monthlyCagr);
+                schdDivYieldNoDRIP *= monthlyDivGrowth;
+                schdSharesNoDRIP += (schdMonthlyInvest / schdPriceNoDRIP);
+            }
+
+            const solValuationNoDRIP = solSharesNoDRIP * solPriceNoDRIP;
+            const solMonthlyDivNoDRIP = (solValuationNoDRIP * solDivYieldNoDRIP / 12) * (1 - TAX_RATE);
+
+            const schdValuationUSD_NoDRIP = schdSharesNoDRIP * schdPriceNoDRIP;
+            const schdMonthlyDivUSD_NoDRIP = (schdValuationUSD_NoDRIP * schdDivYieldNoDRIP / 12) * (1 - TAX_RATE);
+            const schdValuationKRW_NoDRIP = schdValuationUSD_NoDRIP * exRate;
+            const schdMonthlyDivKRW_NoDRIP = schdMonthlyDivUSD_NoDRIP * exRate;
+
+            const grandValuationNoDRIP = solValuationNoDRIP + schdValuationKRW_NoDRIP;
+            const grandMonthlyDivNoDRIP = solMonthlyDivNoDRIP + schdMonthlyDivKRW_NoDRIP;
+
+            const dripAssetAlpha = grandValuationDRIP - grandValuationNoDRIP;
+            const solDripSharesGained = solSharesDRIP - solSharesNoDRIP;
+            const schdDripSharesGained = schdSharesDRIP - schdSharesNoDRIP;
+
+            document.getElementById('grandValuation').innerText = "₩ " + Math.round(grandValuationDRIP).toLocaleString();
+            document.getElementById('grandMonthlyDiv').innerText = "₩ " + Math.round(grandMonthlyDivDRIP).toLocaleString() + " / 월";
+
+            document.getElementById('realGrandValuation').innerText = `🛒 현재 가치 환산: ₩ ${Math.round(realGrandValuation).toLocaleString()}`;
+            document.getElementById('realGrandMonthlyDiv').innerText = `🛒 현재 가치 환산: ₩ ${Math.round(realGrandMonthlyDiv).toLocaleString()} / 월`;
+
+            document.getElementById('grandPrincipal').innerText = "₩ " + Math.round(grandPrincipalKRW).toLocaleString();
+            document.getElementById('grandReinvestedDiv').innerText = "₩ " + Math.round(totalReinvestedKRW).toLocaleString();
+
+            document.getElementById('dripAlphaBadge').innerText = "+ ₩ " + Math.round(dripAssetAlpha).toLocaleString() + " 추가 증대";
+            document.getElementById('noDripVal').innerText = "₩ " + Math.round(grandValuationNoDRIP).toLocaleString();
+            document.getElementById('noDripDiv').innerText = "₩ " + Math.round(grandMonthlyDivNoDRIP).toLocaleString() + " / 월";
+
+            document.getElementById('withDripVal').innerText = "₩ " + Math.round(grandValuationDRIP).toLocaleString();
+            document.getElementById('withDripDiv').innerText = "₩ " + Math.round(grandMonthlyDivDRIP).toLocaleString() + " / 월";
+
+            document.getElementById('solResVal').innerText = "₩ " + Math.round(solValuationDRIP).toLocaleString();
+            document.getElementById('solResDiv').innerText = "월 배당: ₩ " + Math.round(solMonthlyDivDRIP).toLocaleString() + " / 월";
+            document.getElementById('solResShares').innerText = Math.round(solSharesDRIP).toLocaleString() + " 주";
+            document.getElementById('solReinvestedDiv').innerText = "₩ " + Math.round(totalSolReinvestedDivKRW).toLocaleString();
+            document.getElementById('solDripShares').innerText = "+ " + Math.round(solDripSharesGained).toLocaleString() + " 주";
+
+            document.getElementById('schdResVal').innerText = "$" + Math.round(schdValuationUSD_DRIP).toLocaleString() + " (₩" + Math.round(schdValuationKRW_DRIP).toLocaleString() + ")";
+            document.getElementById('schdResDiv').innerText = "월 배당: $" + Math.round(schdMonthlyDivUSD_DRIP).toLocaleString() + " (₩" + Math.round(schdMonthlyDivKRW_DRIP).toLocaleString() + ") / 월";
+            document.getElementById('schdResShares').innerText = Math.round(schdSharesDRIP).toLocaleString() + " 주";
+            document.getElementById('schdReinvestedDiv').innerText = "$" + Math.round(totalSchdReinvestedDivUSD).toLocaleString() + " (₩" + Math.round(totalSchdReinvestedDivUSD * exRate).toLocaleString() + ")";
+            document.getElementById('schdDripShares').innerText = "+ " + Math.round(schdDripSharesGained).toLocaleString() + " 주";
+
+            renderChart();
+        }
+
+        function renderChart() {
+            const ctx = document.getElementById('snowballChart').getContext('2d');
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            const labels = yearlyChartData.map(d => d.yearLabel);
+
+            if (currentChartMode === 'asset') {
+                chartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: '투입 원금 (Principal)',
+                                data: yearlyChartData.map(d => d.principal),
+                                backgroundColor: '#2563eb',
+                                borderRadius: 4
+                            },
+                            {
+                                label: '누적 배당 재투자 (Reinvested Divs)',
+                                data: yearlyChartData.map(d => d.reinvestedDiv),
+                                backgroundColor: '#a855f7',
+                                borderRadius: 4
+                            },
+                            {
+                                label: '주가 상승 이익 (Capital Growth)',
+                                data: yearlyChartData.map(d => d.capitalGain),
+                                backgroundColor: '#10b981',
+                                borderRadius: 4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    color: '#94a3b8',
+                                    font: { size: 11, family: 'Inter' },
+                                    usePointStyle: true,
+                                    padding: 15
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: '#0f172a',
+                                titleColor: '#f8fafc',
+                                bodyColor: '#cbd5e1',
+                                borderColor: '#334155',
+                                borderWidth: 1,
+                                padding: 12,
+                                boxPadding: 6,
+                                usePointStyle: true,
+                                callbacks: {
+                                    title: function(context) {
+                                        return context[0].label;
+                                    },
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) label += ': ';
+                                        label += '₩ ' + context.parsed.y.toLocaleString();
+                                        return label;
+                                    },
+                                    footer: function(tooltipItems) {
+                                        let total = 0;
+                                        tooltipItems.forEach(function(item) {
+                                            total += item.parsed.y;
+                                        });
+                                        return '총 평가금액: ₩ ' + total.toLocaleString();
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                stacked: true,
+                                grid: { display: false },
+                                ticks: { color: '#64748b', font: { size: 11 } }
+                            },
+                            y: {
+                                stacked: true,
+                                grid: { color: '#1e293b' },
+                                ticks: {
+                                    color: '#64748b',
+                                    font: { size: 11 },
+                                    callback: function(value) {
+                                        return formatKRWShort(value);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: '예상 명목 월 배당금',
+                                data: yearlyChartData.map(d => d.monthlyDivNominal),
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                borderWidth: 3,
+                                pointBackgroundColor: '#3b82f6',
+                                pointRadius: 4,
+                                pointHoverRadius: 6,
+                                tension: 0.3,
+                                fill: false
+                            },
+                            {
+                                label: '실질 월 배당금 (물가반영 현재가치)',
+                                data: yearlyChartData.map(d => d.monthlyDivReal),
+                                borderColor: '#10b981',
+                                borderDash: [5, 5],
+                                borderWidth: 2,
+                                pointBackgroundColor: '#10b981',
+                                pointRadius: 4,
+                                pointHoverRadius: 6,
+                                tension: 0.3,
+                                fill: false
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    color: '#94a3b8',
+                                    font: { size: 11, family: 'Inter' },
+                                    usePointStyle: true,
+                                    padding: 15
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: '#0f172a',
+                                titleColor: '#f8fafc',
+                                bodyColor: '#cbd5e1',
+                                borderColor: '#334155',
+                                borderWidth: 1,
+                                padding: 12,
+                                boxPadding: 6,
+                                usePointStyle: true,
+                                callbacks: {
+                                    title: function(context) {
+                                        return context[0].label;
+                                    },
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) label += ': ';
+                                        label += '₩ ' + context.parsed.y.toLocaleString() + ' / 월';
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: '#64748b', font: { size: 11 } }
+                            },
+                            y: {
+                                grid: { color: '#1e293b' },
+                                ticks: {
+                                    color: '#64748b',
+                                    font: { size: 11 },
+                                    callback: function(value) {
+                                        return formatKRWShort(value);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        window.onload = function() {
+            initRetirementMonths();
+            update();
+        };
+    </script>
+</body>
+</html>
