@@ -491,25 +491,25 @@
             renderChart();
         }
 
-       // ⚡ Twelve Data API를 활용한 완벽한 실시간 연동 함수
+      // ⚡ SOL(야후 파이낸스) + SCHD/환율(Twelve Data) 혼합 실시간 연동 함수
         async function fetchLiveMarketData() {
             const syncBtn = document.getElementById('syncApiBtn');
             const spinner = document.getElementById('syncSpinner');
             const statusMsg = document.getElementById('apiStatusMessage');
 
-            // 사용자가 제공한 API Key 반영
             const apiKey = '2dc4a4e26ecd432491177ee79b25a84a'; 
 
             syncBtn.disabled = true;
             spinner.classList.remove('hidden');
             statusMsg.className = "text-[11px] font-medium text-blue-600 mt-2";
-            statusMsg.innerText = "실시간 주가 및 환율을 조회 중입니다...";
+            statusMsg.innerText = "실시간 주가(SOL/SCHD) 및 환율을 조회 중입니다...";
 
             let fetchedFx = false;
             let fetchedSchd = false;
+            let fetchedSol = false;
 
             try {
-                // 1. 실시간 환율 조회 (USD/KRW)
+                // 1. Twelve Data: 실시간 환율 조회 (USD/KRW)
                 const fxRes = await fetch(`https://api.twelvedata.com/price?symbol=USD/KRW&apikey=${apiKey}`);
                 const fxData = await fxRes.json();
                 if (fxData && fxData.price) {
@@ -518,7 +518,7 @@
                     fetchedFx = true;
                 }
 
-                // 2. SCHD 실시간 주가 조회
+                // 2. Twelve Data: SCHD 실시간 주가 조회
                 const schdRes = await fetch(`https://api.twelvedata.com/price?symbol=SCHD&apikey=${apiKey}`);
                 const schdData = await schdRes.json();
                 if (schdData && schdData.price) {
@@ -526,15 +526,30 @@
                     fetchedSchd = true;
                 }
 
+                // 3. 야후 파이낸스 API: SOL 미국배당다우존스(446720.KS) 실시간 주가 조회
+                try {
+                    const solRes = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/446720.KS?interval=1d&range=1d`);
+                    if (solRes.ok) {
+                        const solData = await solRes.json();
+                        const price = solData?.chart?.result?.[0]?.meta?.regularMarketPrice;
+                        if (price) {
+                            document.getElementById('solPrice').value = formatWithCommas(Math.round(price));
+                            fetchedSol = true;
+                        }
+                    }
+                } catch (solErr) {
+                    console.warn("SOL fetch failed:", solErr);
+                }
+
                 spinner.classList.add('hidden');
                 syncBtn.disabled = false;
 
-                if (fetchedFx || fetchedSchd) {
+                if (fetchedFx || fetchedSchd || fetchedSol) {
                     statusMsg.className = "text-[11px] font-medium text-emerald-600 mt-2";
-                    statusMsg.innerText = `✅ 실시간 연동 완료! (환율: ₩${document.getElementById('exchangeRate').value} / SCHD: $${document.getElementById('schdPrice').value})`;
+                    statusMsg.innerText = `✅ 실시간 연동 완료! (환율: ₩${document.getElementById('exchangeRate').value} / SOL: ₩${document.getElementById('solPrice').value} / SCHD: $${document.getElementById('schdPrice').value})`;
                 } else {
                     statusMsg.className = "text-[11px] font-medium text-amber-600 mt-2";
-                    statusMsg.innerText = "⚠️ API 응답을 확인하지 못했습니다.";
+                    statusMsg.innerText = "⚠️ 일부 데이터 응답을 확인하지 못했습니다.";
                 }
 
                 update();
@@ -543,9 +558,10 @@
                 spinner.classList.add('hidden');
                 syncBtn.disabled = false;
                 statusMsg.className = "text-[11px] font-medium text-rose-600 mt-2";
-                statusMsg.innerText = "❌ 네트워크 오류가 발생했습니다.";
+                statusMsg.innerText = "❌ 데이터 조회 중 오류가 발생했습니다.";
             }
-        
+      
+                  
         update();
         }
      
