@@ -952,8 +952,9 @@
         window.onload = function() {
             initRetirementMonths();
             update();
+            // 페이지 접속 직후 자동으로 실시간 시세 및 환율을 1회 불러옵니다.
+            fetchLiveMarketData();
         };
     </script>
 </body>
 </html>
-
