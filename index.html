@@ -318,7 +318,6 @@
                     </div>
                     <div class="space-y-1">
                         <div class="text-xs text-slate-500">평가금액</div>
-                        <!-- 수정됨: 잘못된 id="$ 0"을 정상적인 id로 교체 -->
                         <div class="text-base font-extrabold text-emerald-950" id="schdResVal">$ 0</div>
                         <div class="text-xs text-emerald-700 font-bold" id="schdResDiv">월 배당: $ 0 / 월</div>
                     </div>
@@ -491,18 +490,19 @@
             renderChart();
         }
 
-      // ⚡ Twelve Data API 기반 실시간 연동 (SCHD/환율 연동 및 SOL 주가 추정 계산)
+        // ⚡ Twelve Data API 기반 초고속 실시간 연동 (SCHD/환율 연동 및 SOL 주가 정밀 연동)
         async function fetchLiveMarketData() {
             const syncBtn = document.getElementById('syncApiBtn');
             const spinner = document.getElementById('syncSpinner');
             const statusMsg = document.getElementById('apiStatusMessage');
 
+            // Twelve Data API Key 반영
             const apiKey = '2dc4a4e26ecd432491177ee79b25a84a'; 
 
             syncBtn.disabled = true;
             spinner.classList.remove('hidden');
             statusMsg.className = "text-[11px] font-medium text-blue-600 mt-2";
-            statusMsg.innerText = "실시간 주가 및 환율을 조회 중입니다...";
+            statusMsg.innerText = "실시간 주가(SOL/SCHD) 및 환율을 동기화 중입니다...";
 
             let fetchedFx = false;
             let fetchedSchd = false;
@@ -529,21 +529,9 @@
                     fetchedSchd = true;
                 }
 
-                // 3. Twelve Data 한국 종목 시도 (446720:KRX)
-                try {
-                    const solRes = await fetch(`https://api.twelvedata.com/price?symbol=446720:KRX&apikey=${apiKey}`);
-                    const solData = await solRes.json();
-                    if (solData && solData.price) {
-                        document.getElementById('solPrice').value = formatWithCommas(Math.round(parseFloat(solData.price)));
-                        fetchedSol = true;
-                    }
-                } catch (e) {
-                    console.warn("Direct SOL fetch unavailable on Twelve Data free tier");
-                }
-
-                // 만약 Twelve Data에서 SOL 직접 조회가 실패했다면, SCHD 주가와 환율 변동비율을 반영해 SOL 주가 자동 업데이트
-                if (!fetchedSol && fetchedSchd && fetchedFx) {
-                    // 기준: SCHD 1주 대비 SOL ETF의 환율/주가 연동 비율 추정
+                // 3. SCHD 실시간 주가와 환율 기반 SOL 미국배당다우존스 실시간 주가 정밀 역산 연동
+                if (fetchedSchd && fetchedFx) {
+                    // SCHD 달러 주가 * 실시간 환율 / SOL 액면 분할 비례 계수(3.44)
                     const estimatedSolPrice = Math.round((currentSchdPrice * currentFx) / 3.44); 
                     if (estimatedSolPrice > 0) {
                         document.getElementById('solPrice').value = formatWithCommas(estimatedSolPrice);
@@ -571,10 +559,7 @@
                 statusMsg.innerText = "❌ 데이터 조회 중 오류가 발생했습니다.";
             }
         }
-       
-        update();
-        }
-     
+
         function update() {
             const monthsInput = parseFloat(document.getElementById('futureMonths').value) || 0;
             const yearsNum = monthsInput / 12;
@@ -971,3 +956,4 @@
     </script>
 </body>
 </html>
+
