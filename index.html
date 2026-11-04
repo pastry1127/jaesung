@@ -57,13 +57,13 @@
             </label>
             <div class="grid grid-cols-3 gap-2">
                 <button type="button" class="mode-btn p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 bg-slate-50 hover:bg-slate-100 transition-all text-center" onclick="setMode('conservative', event)">
-                    🛡️ 보수형<br><span class="text-[10px] text-slate-400 font-normal">(주가4.5%/배당5%)</span>
+                    🛡️ 보수형<br><span class="text-[10px] text-slate-400 font-normal">(주가4.5%/배당3%)</span>
                 </button>
                 <button type="button" class="mode-btn active p-2.5 rounded-xl border border-indigo-500 text-xs font-semibold text-indigo-700 bg-indigo-50/80 shadow-sm transition-all text-center" onclick="setMode('realistic', event)">
-                    ⚖️ 현실형<br><span class="text-[10px] text-indigo-500 font-normal">(주가6.5%/배당8%)</span>
+                    ⚖️ 현실형<br><span class="text-[10px] text-indigo-500 font-normal">(주가6.5%/배당3.5%)</span>
                 </button>
                 <button type="button" class="mode-btn p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 bg-slate-50 hover:bg-slate-100 transition-all text-center" onclick="setMode('historical', event)">
-                    🚀 역사적 성과<br><span class="text-[10px] text-slate-400 font-normal">(주가7.5%/배당10%)</span>
+                    🚀 역사적 성과<br><span class="text-[10px] text-slate-400 font-normal">(주가7.5%/배당4%)</span>
                 </button>
             </div>
         </div>
@@ -90,7 +90,7 @@
             <div class="grid grid-cols-2 gap-3">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">현재 보유주수 (주)</label>
-                    <input type="text" id="solShares" value="8,588" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-blue-500">
+                    <input type="text" id="solShares" value="8,587" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-blue-500">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">현재 1주당 주가 (₩)</label>
@@ -102,7 +102,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">총 투자원금 (₩)</label>
-                    <input type="text" id="solPrincipal" value="96,589,886" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-blue-500">
+                    <input type="text" id="solPrincipal" value="96,578,626" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-blue-500">
                 </div>
             </div>
         </div>
@@ -119,11 +119,11 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">현재 1주당 주가 ($)</label>
-                    <input type="text" id="schdPrice" value="35.27" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500">
+                    <input type="text" id="schdPrice" value="35.27" oninput="formatAndCalculate(this, true)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">매월 추가 적립액 ($)</label>
-                    <input type="text" id="schdMonthlyInvest" value="150" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500">
+                    <input type="text" id="schdMonthlyInvest" value="150" oninput="formatAndCalculate(this, true)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">적용 환율 (₩/$)</label>
@@ -152,19 +152,19 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">연 배당수익률 (%)</label>
-                    <input type="text" id="divYield" value="3.5" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-amber-500">
+                    <input type="text" id="divYield" value="3.5" oninput="formatDecimalInput(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-amber-500">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">연 배당성장률 (%)</label>
-                    <input type="text" id="divGrowth" value="8.0" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-amber-500">
+                    <input type="text" id="divGrowth" value="8.0" oninput="formatDecimalInput(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-amber-500">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">주가 상승률 (CAGR%)</label>
-                    <input type="text" id="cagr" value="6.5" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-amber-500">
+                    <input type="text" id="cagr" value="6.5" oninput="formatDecimalInput(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-amber-500">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-rose-700 mb-1">🎈 연 물가상승률 (%)</label>
-                    <input type="text" id="inflationRate" value="3.0" oninput="formatAndCalculate(this)" class="w-full bg-rose-50/60 border border-rose-200 rounded-lg p-2 text-sm font-bold text-rose-900 focus:bg-white focus:ring-1 focus:ring-rose-500">
+                    <input type="text" id="inflationRate" value="3.0" oninput="formatDecimalInput(this)" class="w-full bg-rose-50/60 border border-rose-200 rounded-lg p-2 text-sm font-bold text-rose-900 focus:bg-white focus:ring-1 focus:ring-rose-500">
                 </div>
             </div>
         </div>
@@ -194,7 +194,7 @@
                         </div>
                     </div>
                     <div class="space-y-1 bg-white/5 p-3.5 rounded-xl border border-white/10">
-                        <div class="text-xs text-emerald-300 font-medium">예상 월 환산 배당금</div>
+                        <div class="text-xs text-emerald-300 font-medium">예상 월 환산 배당금 <span id="grandYoCBadge" class="text-[10px] bg-indigo-900 text-indigo-200 px-1.5 py-0.5 rounded ml-1">미래 YoC 3.50%</span></div>
                         <div class="text-xl md:text-2xl font-extrabold text-emerald-300 tracking-tight" id="grandMonthlyDiv">
                             ₩ 0 / 월
                         </div>
@@ -224,12 +224,15 @@
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6 space-y-4 shadow-xl">
                 <div class="space-y-3 border-b border-slate-800 pb-4">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div class="flex gap-2 bg-slate-950 p-1 rounded-xl border border-slate-800/80">
+                        <div class="flex gap-2 bg-slate-950 p-1 rounded-xl border border-slate-800/80 flex-wrap">
                             <button id="chartTabAsset" onclick="switchChartTab('asset')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold transition-all shadow-md">
                                 📊 연도별 자산 성장 (Stacked Bar)
                             </button>
                             <button id="chartTabDiv" onclick="switchChartTab('div')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-400 hover:text-white text-xs font-medium transition-all">
                                 💰 연도별 예상 월 배당금 흐름
+                            </button>
+                            <button id="chartTabYoc" onclick="switchChartTab('yoc')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-400 hover:text-white text-xs font-medium transition-all">
+                                📈 연도별 매수가 배당율(YoC) 추이
                             </button>
                         </div>
                     </div>
@@ -289,15 +292,21 @@
 
             <!-- Individual Breakdown Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <!-- 1. SOL 미국배당다우존스 카드 -->
                 <div class="bg-blue-50/50 border border-blue-100 rounded-xl p-4 space-y-2.5">
                     <div class="text-xs font-bold text-blue-900 border-b border-blue-100 pb-1.5 flex justify-between items-center">
                         <span>🇰🇷 SOL 미국배당다우존스 상세</span>
                         <span class="text-[10px] text-blue-700 font-bold" id="solResShares">0 주</span>
                     </div>
-                    <div class="space-y-1">
+                    <div class="space-y-1.5">
                         <div class="text-xs text-slate-500">평가금액</div>
                         <div class="text-base font-extrabold text-blue-950" id="solResVal">₩ 0</div>
-                        <div class="text-xs text-emerald-700 font-bold" id="solResDiv">월 배당: ₩ 0 / 월</div>
+                        <div class="text-xs text-emerald-700 font-bold" id="solResDivText">월 배당: ₩ 0 / 월</div>
+                        
+                        <div class="flex items-center gap-1.5 pt-1">
+                            <span class="text-[10px] bg-slate-200/80 text-slate-700 px-2 py-0.5 rounded-md font-semibold" id="solMarketYieldBadge">시가배당률: 3.50%</span>
+                            <span class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-md font-bold shadow-sm" id="solYoCBadge">매수가배당률: 3.50%</span>
+                        </div>
                     </div>
                     <div class="bg-white/80 p-2.5 rounded-lg border border-blue-100 text-[11px] space-y-1">
                         <div class="flex justify-between text-slate-600">
@@ -311,15 +320,21 @@
                     </div>
                 </div>
 
+                <!-- 2. SCHD 직투 카드 -->
                 <div class="bg-emerald-50/50 border border-emerald-100 rounded-xl p-4 space-y-2.5">
                     <div class="text-xs font-bold text-emerald-900 border-b border-emerald-100 pb-1.5 flex justify-between items-center">
                         <span>🇺🇸 SCHD 직투 상세</span>
                         <span class="text-[10px] text-emerald-700 font-bold" id="schdResShares">0 주</span>
                     </div>
-                    <div class="space-y-1">
+                    <div class="space-y-1.5">
                         <div class="text-xs text-slate-500">평가금액</div>
                         <div class="text-base font-extrabold text-emerald-950" id="schdResVal">$ 0</div>
-                        <div class="text-xs text-emerald-700 font-bold" id="schdResDiv">월 배당: $ 0 / 월</div>
+                        <div class="text-xs text-emerald-700 font-bold" id="schdResDivText">월 배당: $ 0 / 월</div>
+                        
+                        <div class="flex items-center gap-1.5 pt-1">
+                            <span class="text-[10px] bg-slate-200/80 text-slate-700 px-2 py-0.5 rounded-md font-semibold" id="schdMarketYieldBadge">시가배당률: 3.50%</span>
+                            <span class="text-[10px] bg-emerald-600 text-white px-2 py-0.5 rounded-md font-bold shadow-sm" id="schdYoCBadge">매수가배당률: 3.50%</span>
+                        </div>
                     </div>
                     <div class="bg-white/80 p-2.5 rounded-lg border border-emerald-100 text-[11px] space-y-1">
                         <div class="flex justify-between text-slate-600">
@@ -342,7 +357,7 @@
         let isSyncingSchdPrincipal = false;
         const TAX_RATE = 0.15; // 배당소득세 15% 반영
         let chartInstance = null;
-        let currentChartMode = 'asset'; // 'asset' or 'div'
+        let currentChartMode = 'asset'; // 'asset', 'div', or 'yoc'
         let yearlyChartData = [];
 
         function initRetirementMonths() {
@@ -368,11 +383,15 @@
             return parseFloat(cleanStr) || 0;
         }
 
-        function formatWithCommas(val) {
-            if (val === null || val === undefined || isNaN(val)) return '';
-            const parts = String(val).split('.');
+        function formatWithCommas(val, isFloat = false) {
+            if (val === null || val === undefined || val === '') return '';
+            const strVal = String(val).replace(/,/g, '');
+            const parts = strVal.split('.');
             parts[0] = parts[0].replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-            return parts.length > 1 ? `${parts[0]}.${parts[1]}` : parts[0];
+            if (isFloat && parts.length > 1) {
+                return `${parts[0]}.${parts[1]}`;
+            }
+            return parts[0];
         }
 
         function formatKRWShort(val) {
@@ -384,17 +403,39 @@
             return Math.round(val).toLocaleString() + '원';
         }
 
-        function formatAndCalculate(inputElem) {
+        function formatAndCalculate(inputElem, isFloat = false) {
             const cursorPosition = inputElem.selectionStart;
             const originalLength = inputElem.value.length;
 
-            const numericValue = parseFormattedNumber(inputElem.value);
-            inputElem.value = formatWithCommas(numericValue);
+            let val = inputElem.value.replace(/[^0-9.]/g, '');
+            if (isFloat) {
+                const parts = val.split('.');
+                if (parts.length > 2) val = parts[0] + '.' + parts.slice(1).join('');
+                if (parts.length > 1) {
+                    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                    inputElem.value = parts[0] + '.' + parts[1];
+                } else {
+                    inputElem.value = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                }
+            } else {
+                const num = parseFormattedNumber(val);
+                inputElem.value = formatWithCommas(num);
+            }
 
             const newLength = inputElem.value.length;
             const newCursorPosition = cursorPosition + (newLength - originalLength);
             inputElem.setSelectionRange(newCursorPosition, newCursorPosition);
 
+            update();
+        }
+
+        function formatDecimalInput(inputElem) {
+            let val = inputElem.value.replace(/[^0-9.]/g, '');
+            const parts = val.split('.');
+            if (parts.length > 2) {
+                val = parts[0] + '.' + parts.slice(1).join('');
+            }
+            inputElem.value = val;
             update();
         }
 
@@ -463,14 +504,17 @@
             targetBtn.classList.add('active', 'border-indigo-500', 'bg-indigo-50/80', 'text-indigo-700', 'shadow-sm');
 
             if (mode === 'conservative') {
-                document.getElementById('cagr').value = 4.5;
-                document.getElementById('divGrowth').value = 5.0;
+                document.getElementById('cagr').value = "4.5";
+                document.getElementById('divGrowth').value = "5.0";
+                document.getElementById('divYield').value = "3.0";
             } else if (mode === 'realistic') {
-                document.getElementById('cagr').value = 6.5;
-                document.getElementById('divGrowth').value = 8.0;
+                document.getElementById('cagr').value = "6.5";
+                document.getElementById('divGrowth').value = "8.0";
+                document.getElementById('divYield').value = "3.5";
             } else if (mode === 'historical') {
-                document.getElementById('cagr').value = 7.5;
-                document.getElementById('divGrowth').value = 10.0;
+                document.getElementById('cagr').value = "7.5";
+                document.getElementById('divGrowth').value = "10.0";
+                document.getElementById('divYield').value = "3.8";
             }
             update();
         }
@@ -479,37 +523,39 @@
             currentChartMode = type;
             const tabAsset = document.getElementById('chartTabAsset');
             const tabDiv = document.getElementById('chartTabDiv');
+            const tabYoc = document.getElementById('chartTabYoc');
+
+            tabAsset.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-400 hover:text-white text-xs font-medium transition-all";
+            tabDiv.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-400 hover:text-white text-xs font-medium transition-all";
+            tabYoc.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-400 hover:text-white text-xs font-medium transition-all";
 
             if (type === 'asset') {
                 tabAsset.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold transition-all shadow-md";
-                tabDiv.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-400 hover:text-white text-xs font-medium transition-all";
-            } else {
+            } else if (type === 'div') {
                 tabDiv.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold transition-all shadow-md";
-                tabAsset.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-400 hover:text-white text-xs font-medium transition-all";
+            } else {
+                tabYoc.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold transition-all shadow-md";
             }
             renderChart();
         }
 
-        // ⚡ Twelve Data API 기반 초고속 실시간 연동 (SCHD/환율 연동 및 SOL 주가 정밀 연동)
         async function fetchLiveMarketData() {
             const syncBtn = document.getElementById('syncApiBtn');
             const spinner = document.getElementById('syncSpinner');
             const statusMsg = document.getElementById('apiStatusMessage');
 
-            // Twelve Data API Key 반영
             const apiKey = '2dc4a4e26ecd432491177ee79b25a84a'; 
 
             syncBtn.disabled = true;
             spinner.classList.remove('hidden');
             statusMsg.className = "text-[11px] font-medium text-blue-600 mt-2";
-            statusMsg.innerText = "실시간 주가(SOL/SCHD) 및 환율을 동기화 중입니다...";
+            statusMsg.innerText = "실시간 주가 및 환율을 동기화 중입니다...";
 
             let fetchedFx = false;
             let fetchedSchd = false;
             let fetchedSol = false;
 
             try {
-                // 1. Twelve Data: 실시간 환율 조회 (USD/KRW)
                 const fxRes = await fetch(`https://api.twelvedata.com/price?symbol=USD/KRW&apikey=${apiKey}`);
                 const fxData = await fxRes.json();
                 let currentFx = 1325;
@@ -519,7 +565,6 @@
                     fetchedFx = true;
                 }
 
-                // 2. Twelve Data: SCHD 실시간 주가 조회
                 const schdRes = await fetch(`https://api.twelvedata.com/price?symbol=SCHD&apikey=${apiKey}`);
                 const schdData = await schdRes.json();
                 let currentSchdPrice = 35.27;
@@ -529,9 +574,7 @@
                     fetchedSchd = true;
                 }
 
-                // 3. SCHD 실시간 주가와 환율 기반 SOL 미국배당다우존스 실시간 주가 정밀 역산 연동
                 if (fetchedSchd && fetchedFx) {
-                    // SCHD 달러 주가 * 실시간 환율 / SOL 액면 분할 비례 계수(3.44)
                     const estimatedSolPrice = Math.round((currentSchdPrice * currentFx) / 3.44); 
                     if (estimatedSolPrice > 0) {
                         document.getElementById('solPrice').value = formatWithCommas(estimatedSolPrice);
@@ -658,6 +701,8 @@
                     const yearsPassed = m / 12;
                     const currentMonthlyDivReal = currentMonthlyDivNominal / Math.pow(1 + inflationRate, yearsPassed);
 
+                    const currentYoC = initialDivYield * Math.pow(1 + divGrowthRate, yearsPassed) * 100;
+
                     yearlyChartData.push({
                         yearLabel: curYearLabel,
                         principal: Math.round(totalPrincipal),
@@ -665,7 +710,8 @@
                         capitalGain: Math.round(capitalGain),
                         totalValuation: Math.round(totalValuation),
                         monthlyDivNominal: Math.round(currentMonthlyDivNominal),
-                        monthlyDivReal: Math.round(currentMonthlyDivReal)
+                        monthlyDivReal: Math.round(currentMonthlyDivReal),
+                        yoc: parseFloat(currentYoC.toFixed(2))
                     });
                 }
             }
@@ -686,6 +732,9 @@
             const grandValuationDRIP = solValuationDRIP + schdValuationKRW_DRIP;
             const grandMonthlyDivDRIP = solMonthlyDivDRIP + schdMonthlyDivKRW_DRIP;
             const totalReinvestedKRW = totalSolReinvestedDivKRW + (totalSchdReinvestedDivUSD * exRate);
+
+            const futureYoC = initialDivYield * Math.pow(1 + divGrowthRate, yearsNum) * 100;
+            const marketYield = initialDivYield * 100;
 
             const inflationDiscountFactor = Math.pow(1 + inflationRate, yearsNum);
             const realGrandValuation = grandValuationDRIP / inflationDiscountFactor;
@@ -726,6 +775,7 @@
 
             document.getElementById('grandValuation').innerText = "₩ " + Math.round(grandValuationDRIP).toLocaleString();
             document.getElementById('grandMonthlyDiv').innerText = "₩ " + Math.round(grandMonthlyDivDRIP).toLocaleString() + " / 월";
+            document.getElementById('grandYoCBadge').innerText = `미래 YoC ${futureYoC.toFixed(2)}%`;
 
             document.getElementById('realGrandValuation').innerText = `🛒 현재 가치 환산: ₩ ${Math.round(realGrandValuation).toLocaleString()}`;
             document.getElementById('realGrandMonthlyDiv').innerText = `🛒 현재 가치 환산: ₩ ${Math.round(realGrandMonthlyDiv).toLocaleString()} / 월`;
@@ -741,13 +791,17 @@
             document.getElementById('withDripDiv').innerText = "₩ " + Math.round(grandMonthlyDivDRIP).toLocaleString() + " / 월";
 
             document.getElementById('solResVal').innerText = "₩ " + Math.round(solValuationDRIP).toLocaleString();
-            document.getElementById('solResDiv').innerText = "월 배당: ₩ " + Math.round(solMonthlyDivDRIP).toLocaleString() + " / 월";
+            document.getElementById('solResDivText').innerText = "월 배당: ₩ " + Math.round(solMonthlyDivDRIP).toLocaleString() + " / 월";
+            document.getElementById('solMarketYieldBadge').innerText = `시가배당률: ${marketYield.toFixed(2)}%`;
+            document.getElementById('solYoCBadge').innerText = `매수가배당률: ${futureYoC.toFixed(2)}%`;
             document.getElementById('solResShares').innerText = Math.round(solSharesDRIP).toLocaleString() + " 주";
             document.getElementById('solReinvestedDiv').innerText = "₩ " + Math.round(totalSolReinvestedDivKRW).toLocaleString();
             document.getElementById('solDripShares').innerText = "+ " + Math.round(solDripSharesGained).toLocaleString() + " 주";
 
             document.getElementById('schdResVal').innerText = "$" + Math.round(schdValuationUSD_DRIP).toLocaleString() + " (₩" + Math.round(schdValuationKRW_DRIP).toLocaleString() + ")";
-            document.getElementById('schdResDiv').innerText = "월 배당: $" + Math.round(schdMonthlyDivUSD_DRIP).toLocaleString() + " (₩" + Math.round(schdMonthlyDivKRW_DRIP).toLocaleString() + ") / 월";
+            document.getElementById('schdResDivText').innerText = "월 배당: $" + Math.round(schdMonthlyDivUSD_DRIP).toLocaleString() + " (₩" + Math.round(schdMonthlyDivKRW_DRIP).toLocaleString() + ") / 월";
+            document.getElementById('schdMarketYieldBadge').innerText = `시가배당률: ${marketYield.toFixed(2)}%`;
+            document.getElementById('schdYoCBadge').innerText = `매수가배당률: ${futureYoC.toFixed(2)}%`;
             document.getElementById('schdResShares').innerText = Math.round(schdSharesDRIP).toLocaleString() + " 주";
             document.getElementById('schdReinvestedDiv').innerText = "$" + Math.round(totalSchdReinvestedDivUSD).toLocaleString() + " (₩" + Math.round(totalSchdReinvestedDivUSD * exRate).toLocaleString() + ")";
             document.getElementById('schdDripShares').innerText = "+ " + Math.round(schdDripSharesGained).toLocaleString() + " 주";
@@ -756,7 +810,9 @@
         }
 
         function renderChart() {
-            const ctx = document.getElementById('snowballChart').getContext('2d');
+            const canvasEl = document.getElementById('snowballChart');
+            if (!canvasEl) return;
+            const ctx = canvasEl.getContext('2d');
             if (chartInstance) {
                 chartInstance.destroy();
             }
@@ -856,7 +912,7 @@
                         }
                     }
                 });
-            } else {
+            } else if (currentChartMode === 'div') {
                 chartInstance = new Chart(ctx, {
                     type: 'line',
                     data: {
@@ -946,15 +1002,90 @@
                         }
                     }
                 });
+            } else {
+                chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: '매수가 대비 배당률 (YoC %)',
+                                data: yearlyChartData.map(d => d.yoc),
+                                borderColor: '#f59e0b',
+                                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                                borderWidth: 3,
+                                pointBackgroundColor: '#f59e0b',
+                                pointRadius: 4,
+                                pointHoverRadius: 6,
+                                tension: 0.3,
+                                fill: true
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    color: '#94a3b8',
+                                    font: { size: 11, family: 'Inter' },
+                                    usePointStyle: true,
+                                    padding: 15
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: '#0f172a',
+                                titleColor: '#f8fafc',
+                                bodyColor: '#cbd5e1',
+                                borderColor: '#334155',
+                                borderWidth: 1,
+                                padding: 12,
+                                boxPadding: 6,
+                                usePointStyle: true,
+                                callbacks: {
+                                    title: function(context) {
+                                        return context[0].label;
+                                    },
+                                    label: function(context) {
+                                        return '매수가 배당율 (YoC): ' + context.parsed.y.toFixed(2) + '%';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: '#64748b', font: { size: 11 } }
+                            },
+                            y: {
+                                grid: { color: '#1e293b' },
+                                ticks: {
+                                    color: '#64748b',
+                                    font: { size: 11 },
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
             }
         }
 
         window.onload = function() {
             initRetirementMonths();
             update();
-            // 페이지 접속 직후 자동으로 실시간 시세 및 환율을 1회 불러옵니다.
             fetchLiveMarketData();
         };
     </script>
 </body>
 </html>
+
