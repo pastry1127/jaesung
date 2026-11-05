@@ -1,11 +1,16 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SOL + SCHD 배당 복리 시뮬레이터</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
     <!-- Chart.js CDN for Professional Interactive Visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -23,55 +28,69 @@
             background: #cbd5e1;
             border-radius: 3px;
         }
+        .dark ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #334155;
+        }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 min-h-screen p-3 md:p-6 flex justify-center items-start">
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen p-3 md:p-6 flex justify-center items-start transition-colors duration-300">
 
-    <div class="max-w-3xl w-full bg-white rounded-2xl shadow-xl border border-slate-200/80 p-4 md:p-8 space-y-6 my-2">
+    <div class="max-w-3xl w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200/80 dark:border-slate-800 p-4 md:p-8 space-y-6 my-2 transition-colors duration-300">
         
-        <!-- Header & Live API Sync Button -->
-        <div class="text-center space-y-3 border-b border-slate-100 pb-5">
-            <h1 class="text-xl md:text-2xl font-extrabold text-slate-950 tracking-tight">
+        <!-- Header & Live API Sync Button & Theme Toggle -->
+        <div class="relative text-center space-y-3 border-b border-slate-100 dark:border-slate-800 pb-5">
+            <!-- Theme Toggle Switch -->
+            <div class="absolute top-0 right-0 flex items-center gap-2">
+                <span class="text-xs text-slate-500 dark:text-slate-400 font-medium hidden sm:inline" id="themeLabel">다크모드</span>
+                <button type="button" onclick="toggleTheme()" class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-slate-300 dark:bg-indigo-600 transition-colors duration-200 ease-in-out focus:outline-none shadow-inner" role="switch" aria-checked="true">
+                    <span id="themeToggleThumb" class="pointer-events-none inline-block h-5 w-5 transform translate-x-5 rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out"></span>
+                </button>
+            </div>
+
+            <h1 class="text-xl md:text-2xl font-extrabold text-slate-950 dark:text-white tracking-tight pt-3 sm:pt-0">
                 SOL + SCHD 배당 복리 시뮬레이터
             </h1>
-            <p class="text-xs md:text-sm text-slate-500 font-medium">
+            <p class="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium">
                 실시간 환율/시세 기반 배당 재투자(DRIP) 복리 스노우볼 정밀 분석 (배당세 15% 반영)
             </p>
 
             <div class="pt-1">
-                <button id="syncApiBtn" onclick="fetchLiveMarketData()" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition-all text-white text-xs md:text-sm font-semibold rounded-xl shadow-md shadow-indigo-100">
+                <button id="syncApiBtn" onclick="fetchLiveMarketData()" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition-all text-white text-xs md:text-sm font-semibold rounded-xl shadow-md shadow-indigo-100 dark:shadow-none">
                     <svg id="syncSpinner" class="hidden animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                     <span>⚡ 실시간 주가/환율 연동</span>
                 </button>
-                <div id="apiStatusMessage" class="text-[11px] font-medium text-slate-500 mt-2 min-h-[16px]"></div>
+                <div id="apiStatusMessage" class="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-2 min-h-[16px]"></div>
             </div>
         </div>
 
         <!-- Scenario Preset Selector -->
         <div class="space-y-2">
-            <label class="block text-xs font-bold text-slate-700 tracking-wide uppercase">
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 tracking-wide uppercase">
                 🎯 시나리오 모드 선택
             </label>
             <div class="grid grid-cols-3 gap-2">
-                <button type="button" class="mode-btn p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 bg-slate-50 hover:bg-slate-100 transition-all text-center" onclick="setMode('conservative', event)">
-                    🛡️ 보수형<br><span class="text-[10px] text-slate-400 font-normal">(주가4.5%/배당3%)</span>
+                <button type="button" class="mode-btn p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-center" onclick="setMode('conservative', event)">
+                    🛡️ 보수형<br><span class="text-[10px] text-slate-400 dark:text-slate-500 font-normal">(주가4.5%/배당3%)</span>
                 </button>
-                <button type="button" class="mode-btn active p-2.5 rounded-xl border border-indigo-500 text-xs font-semibold text-indigo-700 bg-indigo-50/80 shadow-sm transition-all text-center" onclick="setMode('realistic', event)">
-                    ⚖️ 현실형<br><span class="text-[10px] text-indigo-500 font-normal">(주가6.5%/배당3.5%)</span>
+                <button type="button" class="mode-btn active p-2.5 rounded-xl border border-indigo-500 text-xs font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50/80 dark:bg-indigo-950/50 shadow-sm transition-all text-center" onclick="setMode('realistic', event)">
+                    ⚖️ 현실형<br><span class="text-[10px] text-indigo-500 dark:text-indigo-400 font-normal">(주가6.5%/배당3.5%)</span>
                 </button>
-                <button type="button" class="mode-btn p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 bg-slate-50 hover:bg-slate-100 transition-all text-center" onclick="setMode('historical', event)">
-                    🚀 역사적 성과<br><span class="text-[10px] text-slate-400 font-normal">(주가7.5%/배당4%)</span>
+                <button type="button" class="mode-btn p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-center" onclick="setMode('historical', event)">
+                    🚀 역사적 성과<br><span class="text-[10px] text-slate-400 dark:text-slate-500 font-normal">(주가7.5%/배당4%)</span>
                 </button>
             </div>
         </div>
 
         <!-- Forecast Months Input with Dynamic Target Date Calculation -->
-        <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 space-y-2">
+        <div class="bg-indigo-50/50 dark:bg-indigo-950/30 p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/50 space-y-2">
             <div class="flex justify-between items-center">
-                <label for="futureMonths" class="text-xs font-bold text-indigo-900">
+                <label for="futureMonths" class="text-xs font-bold text-indigo-900 dark:text-indigo-300">
                     🗓️ 예측 기간 ( 개월 )
                 </label>
                 <span id="targetDateBadge" class="inline-block bg-indigo-600 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-sm">
@@ -79,92 +98,92 @@
                 </span>
             </div>
             <input type="number" id="futureMonths" min="1" max="480" step="1" oninput="update()"
-                class="w-full bg-white border border-indigo-200 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm">
+                class="w-full bg-white dark:bg-slate-940 dark:bg-slate-800 border border-indigo-200 dark:border-indigo-900/80 rounded-lg p-2.5 text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm">
         </div>
 
         <!-- Section 1: SOL US Dividend -->
         <div class="space-y-3">
-            <h2 class="text-sm font-extrabold text-blue-900 flex items-center gap-1.5 border-l-4 border-blue-600 pl-2.5">
-                1. SOL 미국배당다우존스 <span class="text-xs font-medium text-slate-500">(원화 계좌 / 23년 9월~)</span>
+            <h2 class="text-sm font-extrabold text-blue-900 dark:text-blue-400 flex items-center gap-1.5 border-l-4 border-blue-600 pl-2.5">
+                1. SOL 미국배당다우존스 <span class="text-xs font-medium text-slate-500 dark:text-slate-400">(원화 계좌 / 23년 9월~)</span>
             </h2>
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">현재 보유주수 (주)</label>
-                    <input type="text" id="solShares" value="8,588" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-blue-500">
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">현재 보유주수 (주)</label>
+                    <input type="text" id="solShares" value="8,587" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm font-medium text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-blue-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">현재 1주당 주가 (₩)</label>
-                    <input type="text" id="solPrice" value="13,565" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-blue-500">
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">현재 1주당 주가 (₩)</label>
+                    <input type="text" id="solPrice" value="13,565" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm font-medium text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-blue-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">매월 추가 적립액 (₩)</label>
-                    <input type="text" id="solMonthlyInvest" value="300,000" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-blue-500">
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">매월 추가 적립액 (₩)</label>
+                    <input type="text" id="solMonthlyInvest" value="300,000" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm font-medium text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-blue-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">총 투자원금 (₩)</label>
-                    <input type="text" id="solPrincipal" value="96,589,886" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-blue-500">
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">총 투자원금 (₩)</label>
+                    <input type="text" id="solPrincipal" value="96,578,626" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm font-medium text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-blue-500">
                 </div>
             </div>
         </div>
 
         <!-- Section 2: SCHD Direct Investment -->
         <div class="space-y-3">
-            <h2 class="text-sm font-extrabold text-emerald-900 flex items-center gap-1.5 border-l-4 border-emerald-600 pl-2.5">
-                2. SCHD 미국직투 <span class="text-xs font-medium text-slate-500">(달러 계좌 / 24년 3월~)</span>
+            <h2 class="text-sm font-extrabold text-emerald-900 dark:text-emerald-400 flex items-center gap-1.5 border-l-4 border-emerald-600 pl-2.5">
+                2. SCHD 미국직투 <span class="text-xs font-medium text-slate-500 dark:text-slate-400">(달러 계좌 / 24년 3월~)</span>
             </h2>
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">현재 보유주수 (주)</label>
-                    <input type="text" id="schdShares" value="827" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500">
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">현재 보유주수 (주)</label>
+                    <input type="text" id="schdShares" value="827" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm font-medium text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-emerald-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">현재 1주당 주가 ($)</label>
-                    <input type="text" id="schdPrice" value="35.27" oninput="formatAndCalculate(this, true)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500">
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">현재 1주당 주가 ($)</label>
+                    <input type="text" id="schdPrice" value="35.27" oninput="formatAndCalculate(this, true)" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm font-medium text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-emerald-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">매월 추가 적립액 ($)</label>
-                    <input type="text" id="schdMonthlyInvest" value="150" oninput="formatAndCalculate(this, true)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500">
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">매월 추가 적립액 ($)</label>
+                    <input type="text" id="schdMonthlyInvest" value="150" oninput="formatAndCalculate(this, true)" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm font-medium text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-emerald-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">적용 환율 (₩/$)</label>
-                    <input type="text" id="exchangeRate" value="1,325" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500">
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">적용 환율 (₩/$)</label>
+                    <input type="text" id="exchangeRate" value="1,325" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm font-medium text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-emerald-500">
                 </div>
             </div>
 
             <!-- SCHD Investment Principal Inputs -->
-            <div class="grid grid-cols-2 gap-3 bg-emerald-50/60 p-3.5 rounded-xl border border-emerald-200">
+            <div class="grid grid-cols-2 gap-3 bg-emerald-50/60 dark:bg-emerald-950/30 p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-900/50">
                 <div>
-                    <label class="block text-xs font-bold text-emerald-900 mb-1">SCHD 총 투자원금 ($)</label>
-                    <input type="text" id="schdPrincipalUSD" value="26,118.56" oninput="onSchdPrincipalUSDInput(this)" class="w-full bg-white border border-emerald-300 rounded-lg p-2 text-sm font-bold text-emerald-950 focus:ring-2 focus:ring-emerald-500">
+                    <label class="block text-xs font-bold text-emerald-900 dark:text-emerald-300 mb-1">SCHD 총 투자원금 ($)</label>
+                    <input type="text" id="schdPrincipalUSD" value="26,118.56" oninput="onSchdPrincipalUSDInput(this)" class="w-full bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-800 rounded-lg p-2 text-sm font-bold text-emerald-950 dark:text-emerald-200 focus:ring-2 focus:ring-emerald-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-emerald-900 mb-1">SCHD 총 투자원금 (₩)</label>
-                    <input type="text" id="schdPrincipalKRW" value="34,607,092" oninput="onSchdPrincipalKRWInput(this)" class="w-full bg-white border border-emerald-300 rounded-lg p-2 text-sm font-bold text-emerald-950 focus:ring-2 focus:ring-emerald-500">
+                    <label class="block text-xs font-bold text-emerald-900 dark:text-emerald-300 mb-1">SCHD 총 투자원금 (₩)</label>
+                    <input type="text" id="schdPrincipalKRW" value="34,607,092" oninput="onSchdPrincipalKRWInput(this)" class="w-full bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-800 rounded-lg p-2 text-sm font-bold text-emerald-950 dark:text-emerald-200 focus:ring-2 focus:ring-emerald-500">
                 </div>
             </div>
         </div>
 
         <!-- Section 3: Shared Growth & Inflation Assumptions -->
         <div class="space-y-3">
-            <h2 class="text-sm font-extrabold text-amber-900 flex items-center gap-1.5 border-l-4 border-amber-500 pl-2.5">
+            <h2 class="text-sm font-extrabold text-amber-900 dark:text-amber-400 flex items-center gap-1.5 border-l-4 border-amber-500 pl-2.5">
                 3. 성장, 배당 및 물가상승률 (공동 적용)
             </h2>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">연 배당수익률 (%)</label>
-                    <input type="text" id="divYield" value="3.5" oninput="formatDecimalInput(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-amber-500">
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">연 배당수익률 (%)</label>
+                    <input type="text" id="divYield" value="3.5" oninput="formatDecimalInput(this)" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm font-medium text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-amber-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">연 배당성장률 (%)</label>
-                    <input type="text" id="divGrowth" value="8.0" oninput="formatDecimalInput(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-amber-500">
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">연 배당성장률 (%)</label>
+                    <input type="text" id="divGrowth" value="8.0" oninput="formatDecimalInput(this)" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm font-medium text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-amber-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">주가 상승률 (CAGR%)</label>
-                    <input type="text" id="cagr" value="6.5" oninput="formatDecimalInput(this)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-amber-500">
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">주가 상승률 (CAGR%)</label>
+                    <input type="text" id="cagr" value="6.5" oninput="formatDecimalInput(this)" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm font-medium text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-amber-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-rose-700 mb-1">🎈 연 물가상승률 (%)</label>
-                    <input type="text" id="inflationRate" value="3.0" oninput="formatDecimalInput(this)" class="w-full bg-rose-50/60 border border-rose-200 rounded-lg p-2 text-sm font-bold text-rose-900 focus:bg-white focus:ring-1 focus:ring-rose-500">
+                    <label class="block text-xs font-bold text-rose-700 dark:text-rose-400 mb-1">🎈 연 물가상승률 (%)</label>
+                    <input type="text" id="inflationRate" value="3.0" oninput="formatDecimalInput(this)" class="w-full bg-rose-50/60 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 rounded-lg p-2 text-sm font-bold text-rose-900 dark:text-rose-200 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-rose-500">
                 </div>
             </div>
         </div>
@@ -173,7 +192,7 @@
         <div class="pt-2 space-y-4">
             
             <!-- Grand Total Summary Card -->
-            <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-5 md:p-6 text-white shadow-xl space-y-4">
+            <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 dark:from-slate-950 dark:via-indigo-950/80 dark:to-slate-900 rounded-2xl p-5 md:p-6 text-white shadow-xl space-y-4 border border-slate-800">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-3">
                     <span class="text-xs font-bold uppercase tracking-wider text-indigo-300 flex items-center gap-1.5">
                         🌟 전체 계좌 통합 최종 성과
@@ -221,10 +240,10 @@
             </div>
 
             <!-- 📊 다크 테마 시각화 차트 컴포넌트 -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6 space-y-4 shadow-xl">
+            <div class="bg-slate-900 dark:bg-slate-950 border border-slate-800 rounded-2xl p-4 md:p-6 space-y-4 shadow-xl">
                 <div class="space-y-3 border-b border-slate-800 pb-4">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div class="flex gap-2 bg-slate-950 p-1 rounded-xl border border-slate-800/80 flex-wrap">
+                        <div class="flex gap-2 bg-slate-950 dark:bg-slate-900 p-1 rounded-xl border border-slate-800 flex-wrap">
                             <button id="chartTabAsset" onclick="switchChartTab('asset')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold transition-all shadow-md">
                                 📊 연도별 자산 성장 (Stacked Bar)
                             </button>
@@ -247,44 +266,44 @@
             </div>
 
             <!-- DRIP Comparison Impact Card -->
-            <div class="bg-gradient-to-r from-emerald-900/10 via-teal-900/5 to-emerald-900/10 border border-emerald-200 rounded-2xl p-4 md:p-5 space-y-3">
-                <div class="flex items-center justify-between border-b border-emerald-100 pb-2">
-                    <h3 class="text-xs md:text-sm font-extrabold text-emerald-950 flex items-center gap-1.5">
+            <div class="bg-gradient-to-r from-emerald-900/10 via-teal-900/5 to-emerald-900/10 dark:from-emerald-950/30 dark:via-teal-950/10 dark:to-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 rounded-2xl p-4 md:p-5 space-y-3">
+                <div class="flex items-center justify-between border-b border-emerald-100 dark:border-emerald-900/50 pb-2">
+                    <h3 class="text-xs md:text-sm font-extrabold text-emerald-950 dark:text-emerald-300 flex items-center gap-1.5">
                         ⚡ 배당 재투자(DRIP) 복리 분석
                     </h3>
-                    <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-md" id="dripAlphaBadge">
+                    <span class="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/80 px-2.5 py-0.5 rounded-md" id="dripAlphaBadge">
                         + ₩ 0 추가 증대
                     </span>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                    <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-1.5">
-                        <div class="font-bold text-slate-600 text-xs border-b border-slate-100 pb-1 flex justify-between">
+                    <div class="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1.5">
+                        <div class="font-bold text-slate-600 dark:text-slate-300 text-xs border-b border-slate-100 dark:border-slate-700 pb-1 flex justify-between">
                             <span>💸 배당 미재투자 (현금 수령)</span>
                             <span class="text-[10px] text-slate-400">단순 적립만 진행</span>
                         </div>
-                        <div class="flex justify-between text-slate-700">
+                        <div class="flex justify-between text-slate-700 dark:text-slate-300">
                             <span>최종 자산:</span>
                             <span class="font-bold" id="noDripVal">₩ 0</span>
                         </div>
-                        <div class="flex justify-between text-slate-700">
+                        <div class="flex justify-between text-slate-700 dark:text-slate-300">
                             <span>월 배당금:</span>
-                            <span class="font-bold text-slate-800" id="noDripDiv">₩ 0 / 월</span>
+                            <span class="font-bold text-slate-800 dark:text-slate-100" id="noDripDiv">₩ 0 / 월</span>
                         </div>
                     </div>
 
-                    <div class="bg-emerald-500/10 p-3 rounded-xl border border-emerald-300/60 space-y-1.5">
-                        <div class="font-bold text-emerald-900 text-xs border-b border-emerald-200/50 pb-1 flex justify-between">
+                    <div class="bg-emerald-500/10 dark:bg-emerald-950/40 p-3 rounded-xl border border-emerald-300/60 dark:border-emerald-800/60 space-y-1.5">
+                        <div class="font-bold text-emerald-900 dark:text-emerald-300 text-xs border-b border-emerald-200/50 dark:border-emerald-800/50 pb-1 flex justify-between">
                             <span>🔄 배당 재투자 (DRIP 적용)</span>
-                            <span class="text-[10px] text-emerald-700 font-semibold">스노우볼 복리</span>
+                            <span class="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold">스노우볼 복리</span>
                         </div>
-                        <div class="flex justify-between text-emerald-950">
+                        <div class="flex justify-between text-emerald-950 dark:text-emerald-200">
                             <span>최종 자산:</span>
-                            <span class="font-extrabold text-emerald-800" id="withDripVal">₩ 0</span>
+                            <span class="font-extrabold text-emerald-800 dark:text-emerald-400" id="withDripVal">₩ 0</span>
                         </div>
-                        <div class="flex justify-between text-emerald-950">
+                        <div class="flex justify-between text-emerald-950 dark:text-emerald-200">
                             <span>월 배당금:</span>
-                            <span class="font-extrabold text-emerald-700" id="withDripDiv">₩ 0 / 월</span>
+                            <span class="font-extrabold text-emerald-700 dark:text-emerald-400" id="withDripDiv">₩ 0 / 월</span>
                         </div>
                     </div>
                 </div>
@@ -293,57 +312,57 @@
             <!-- Individual Breakdown Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <!-- 1. SOL 미국배당다우존스 카드 -->
-                <div class="bg-blue-50/50 border border-blue-100 rounded-xl p-4 space-y-2.5">
-                    <div class="text-xs font-bold text-blue-900 border-b border-blue-100 pb-1.5 flex justify-between items-center">
+                <div class="bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40 rounded-xl p-4 space-y-2.5">
+                    <div class="text-xs font-bold text-blue-900 dark:text-blue-300 border-b border-blue-100 dark:border-blue-900/40 pb-1.5 flex justify-between items-center">
                         <span>🇰🇷 SOL 미국배당다우존스 상세</span>
-                        <span class="text-[10px] text-blue-700 font-bold" id="solResShares">0 주</span>
+                        <span class="text-[10px] text-blue-700 dark:text-blue-400 font-bold" id="solResShares">0 주</span>
                     </div>
                     <div class="space-y-1.5">
-                        <div class="text-xs text-slate-500">평가금액</div>
-                        <div class="text-base font-extrabold text-blue-950" id="solResVal">₩ 0</div>
-                        <div class="text-xs text-emerald-700 font-bold" id="solResDivText">월 배당: ₩ 0 / 월</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400">평가금액</div>
+                        <div class="text-base font-extrabold text-blue-950 dark:text-blue-200" id="solResVal">₩ 0</div>
+                        <div class="text-xs text-emerald-700 dark:text-emerald-400 font-bold" id="solResDivText">월 배당: ₩ 0 / 월</div>
                         
                         <div class="flex items-center gap-1.5 pt-1">
-                            <span class="text-[10px] bg-slate-200/80 text-slate-700 px-2 py-0.5 rounded-md font-semibold" id="solMarketYieldBadge">시가배당률: 3.50%</span>
+                            <span class="text-[10px] bg-slate-200/80 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded-md font-semibold" id="solMarketYieldBadge">시가배당률: 3.50%</span>
                             <span class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-md font-bold shadow-sm" id="solYoCBadge">매수가배당률: 3.50%</span>
                         </div>
                     </div>
-                    <div class="bg-white/80 p-2.5 rounded-lg border border-blue-100 text-[11px] space-y-1">
-                        <div class="flex justify-between text-slate-600">
+                    <div class="bg-white/80 dark:bg-slate-800/80 p-2.5 rounded-lg border border-blue-100 dark:border-blue-900/40 text-[11px] space-y-1">
+                        <div class="flex justify-between text-slate-600 dark:text-slate-300">
                             <span>재투자된 누적 배당금:</span>
-                            <span class="font-bold text-blue-900" id="solReinvestedDiv">₩ 0</span>
+                            <span class="font-bold text-blue-900 dark:text-blue-300" id="solReinvestedDiv">₩ 0</span>
                         </div>
-                        <div class="flex justify-between text-slate-600">
+                        <div class="flex justify-between text-slate-600 dark:text-slate-300">
                             <span>DRIP으로 얻은 추가 주식:</span>
-                            <span class="font-bold text-emerald-600" id="solDripShares">+ 0 주</span>
+                            <span class="font-bold text-emerald-600 dark:text-emerald-400" id="solDripShares">+ 0 주</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- 2. SCHD 직투 카드 -->
-                <div class="bg-emerald-50/50 border border-emerald-100 rounded-xl p-4 space-y-2.5">
-                    <div class="text-xs font-bold text-emerald-900 border-b border-emerald-100 pb-1.5 flex justify-between items-center">
+                <div class="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 rounded-xl p-4 space-y-2.5">
+                    <div class="text-xs font-bold text-emerald-900 dark:text-emerald-300 border-b border-emerald-100 dark:border-emerald-900/40 pb-1.5 flex justify-between items-center">
                         <span>🇺🇸 SCHD 직투 상세</span>
-                        <span class="text-[10px] text-emerald-700 font-bold" id="schdResShares">0 주</span>
+                        <span class="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold" id="schdResShares">0 주</span>
                     </div>
                     <div class="space-y-1.5">
-                        <div class="text-xs text-slate-500">평가금액</div>
-                        <div class="text-base font-extrabold text-emerald-950" id="schdResVal">$ 0</div>
-                        <div class="text-xs text-emerald-700 font-bold" id="schdResDivText">월 배당: $ 0 / 월</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400">평가금액</div>
+                        <div class="text-base font-extrabold text-emerald-950 dark:text-emerald-200" id="schdResVal">$ 0</div>
+                        <div class="text-xs text-emerald-700 dark:text-emerald-400 font-bold" id="schdResDivText">월 배당: $ 0 / 월</div>
                         
                         <div class="flex items-center gap-1.5 pt-1">
-                            <span class="text-[10px] bg-slate-200/80 text-slate-700 px-2 py-0.5 rounded-md font-semibold" id="schdMarketYieldBadge">시가배당률: 3.50%</span>
+                            <span class="text-[10px] bg-slate-200/80 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded-md font-semibold" id="schdMarketYieldBadge">시가배당률: 3.50%</span>
                             <span class="text-[10px] bg-emerald-600 text-white px-2 py-0.5 rounded-md font-bold shadow-sm" id="schdYoCBadge">매수가배당률: 3.50%</span>
                         </div>
                     </div>
-                    <div class="bg-white/80 p-2.5 rounded-lg border border-emerald-100 text-[11px] space-y-1">
-                        <div class="flex justify-between text-slate-600">
+                    <div class="bg-white/80 dark:bg-slate-800/80 p-2.5 rounded-lg border border-emerald-100 dark:border-emerald-900/40 text-[11px] space-y-1">
+                        <div class="flex justify-between text-slate-600 dark:text-slate-300">
                             <span>재투자된 누적 배당금:</span>
-                            <span class="font-bold text-emerald-900" id="schdReinvestedDiv">$ 0</span>
+                            <span class="font-bold text-emerald-900 dark:text-emerald-300" id="schdReinvestedDiv">$ 0</span>
                         </div>
-                        <div class="flex justify-between text-slate-600">
+                        <div class="flex justify-between text-slate-600 dark:text-slate-300">
                             <span>DRIP으로 얻은 추가 주식:</span>
-                            <span class="font-bold text-emerald-600" id="schdDripShares">+ 0 주</span>
+                            <span class="font-bold text-emerald-600 dark:text-emerald-400" id="schdDripShares">+ 0 주</span>
                         </div>
                     </div>
                 </div>
@@ -359,6 +378,23 @@
         let chartInstance = null;
         let currentChartMode = 'asset'; // 'asset', 'div', or 'yoc'
         let yearlyChartData = [];
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const thumb = document.getElementById('themeToggleThumb');
+            const label = document.getElementById('themeLabel');
+
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                thumb.style.transform = 'translateX(0px)';
+                if(label) label.innerText = '일반모드';
+            } else {
+                html.classList.add('dark');
+                thumb.style.transform = 'translateX(20px)';
+                if(label) label.innerText = '다크모드';
+            }
+            renderChart();
+        }
 
         function initRetirementMonths() {
             const now = new Date();
@@ -495,13 +531,13 @@
         function setMode(mode, evt) {
             const btns = document.querySelectorAll('.mode-btn');
             btns.forEach(b => {
-                b.classList.remove('active', 'border-indigo-500', 'bg-indigo-50/80', 'text-indigo-700', 'shadow-sm');
-                b.classList.add('border-slate-200', 'bg-slate-50', 'text-slate-600');
+                b.classList.remove('active', 'border-indigo-500', 'bg-indigo-50/80', 'dark:bg-indigo-950/50', 'text-indigo-700', 'dark:text-indigo-300', 'shadow-sm');
+                b.classList.add('border-slate-200', 'dark:border-slate-800', 'bg-slate-50', 'dark:bg-slate-800/60', 'text-slate-600', 'dark:text-slate-400');
             });
 
             const targetBtn = evt ? evt.currentTarget : event.currentTarget;
-            targetBtn.classList.remove('border-slate-200', 'bg-slate-50', 'text-slate-600');
-            targetBtn.classList.add('active', 'border-indigo-500', 'bg-indigo-50/80', 'text-indigo-700', 'shadow-sm');
+            targetBtn.classList.remove('border-slate-200', 'dark:border-slate-800', 'bg-slate-50', 'dark:bg-slate-800/60', 'text-slate-600', 'dark:text-slate-400');
+            targetBtn.classList.add('active', 'border-indigo-500', 'bg-indigo-50/80', 'dark:bg-indigo-950/50', 'text-indigo-700', 'dark:text-indigo-300', 'shadow-sm');
 
             if (mode === 'conservative') {
                 document.getElementById('cagr').value = "4.5";
@@ -548,7 +584,7 @@
 
             syncBtn.disabled = true;
             spinner.classList.remove('hidden');
-            statusMsg.className = "text-[11px] font-medium text-blue-600 mt-2";
+            statusMsg.className = "text-[11px] font-medium text-blue-600 dark:text-blue-400 mt-2";
             statusMsg.innerText = "실시간 주가 및 환율을 동기화 중입니다...";
 
             let fetchedFx = false;
@@ -574,35 +610,30 @@
                     fetchedSchd = true;
                 }
 
+                if (fetchedSchd && fetchedFx) {
+                    const baseSolPrice = (currentSchdPrice * currentFx) / 3.44;
+                    const annualCostDiff = 0.0011; 
+                    const now = new Date();
+                    const startOfYear = new Date(now.getFullYear(), 0, 1);
+                    const daysPassed = Math.floor((now - startOfYear) / (1000 * 60 * 60 * 24));
+                    const feeFactor = 1 - (annualCostDiff * (daysPassed / 365));
 
-                
-            if (fetchedSchd && fetchedFx) {  
-           // 1. 기본 SCHD 환산가 계산
-                   const baseSolPrice = (currentSchdPrice * currentFx) / 3.44;
-           // 2. SOL과 SCHD 간 연간 실질 수수료 차이 반영 (약 0.105%)
-                   const annualCostDiff = 0.00105;
-                   const now = new Date();
-                   const startOfYear = new Date(now.getFullYear(), 0, 1);
-                   const daysPassed = Math.floor((now - startOfYear) / (1000 * 60 * 60 * 24));
-                   const feeAdjustmentFactor = 1 - (annualCostDiff * (daysPassed / 365));
-
-           // 3. 수수료 감가가 반영된 최종 SOL 추정 주가
-                    const estimatedSolPrice = Math.round(baseSolPrice * feeAdjustmentFactor);
+                    const estimatedSolPrice = Math.round(baseSolPrice * feeFactor);
 
                     if (estimatedSolPrice > 0) {
                         document.getElementById('solPrice').value = formatWithCommas(estimatedSolPrice);
                         fetchedSol = true;
                     }
-                }  
-              
+                }
+
                 spinner.classList.add('hidden');
                 syncBtn.disabled = false;
 
                 if (fetchedFx && fetchedSchd && fetchedSol) {
-                    statusMsg.className = "text-[11px] font-medium text-emerald-600 mt-2";
+                    statusMsg.className = "text-[11px] font-medium text-emerald-600 dark:text-emerald-400 mt-2";
                     statusMsg.innerText = `✅ 실시간 연동 완료! (환율: ₩${document.getElementById('exchangeRate').value} / SOL: ₩${document.getElementById('solPrice').value} / SCHD: $${document.getElementById('schdPrice').value})`;
                 } else {
-                    statusMsg.className = "text-[11px] font-medium text-amber-600 mt-2";
+                    statusMsg.className = "text-[11px] font-medium text-amber-600 dark:text-amber-400 mt-2";
                     statusMsg.innerText = "⚠️ 일부 데이터만 수신되었습니다.";
                 }
 
@@ -611,7 +642,7 @@
                 console.warn("API Error:", e);
                 spinner.classList.add('hidden');
                 syncBtn.disabled = false;
-                statusMsg.className = "text-[11px] font-medium text-rose-600 mt-2";
+                statusMsg.className = "text-[11px] font-medium text-rose-600 dark:text-rose-400 mt-2";
                 statusMsg.innerText = "❌ 데이터 조회 중 오류가 발생했습니다.";
             }
         }
@@ -830,6 +861,14 @@
                 chartInstance.destroy();
             }
 
+            const isDark = document.documentElement.classList.contains('dark');
+            const gridColor = isDark ? '#1e293b' : '#f1f5f9';
+            const tickColor = isDark ? '#64748b' : '#94a3b8';
+            const tooltipBg = isDark ? '#0f172a' : '#ffffff';
+            const tooltipTitle = isDark ? '#f8fafc' : '#0f172a';
+            const tooltipBody = isDark ? '#cbd5e1' : '#475569';
+            const tooltipBorder = isDark ? '#334155' : '#cbd5e1';
+
             const labels = yearlyChartData.map(d => d.yearLabel);
 
             if (currentChartMode === 'asset') {
@@ -870,17 +909,17 @@
                                 display: true,
                                 position: 'bottom',
                                 labels: {
-                                    color: '#94a3b8',
+                                    color: tickColor,
                                     font: { size: 11, family: 'Inter' },
                                     usePointStyle: true,
                                     padding: 15
                                 }
                             },
                             tooltip: {
-                                backgroundColor: '#0f172a',
-                                titleColor: '#f8fafc',
-                                bodyColor: '#cbd5e1',
-                                borderColor: '#334155',
+                                backgroundColor: tooltipBg,
+                                titleColor: tooltipTitle,
+                                bodyColor: tooltipBody,
+                                borderColor: tooltipBorder,
                                 borderWidth: 1,
                                 padding: 12,
                                 boxPadding: 6,
@@ -909,13 +948,13 @@
                             x: {
                                 stacked: true,
                                 grid: { display: false },
-                                ticks: { color: '#64748b', font: { size: 11 } }
+                                ticks: { color: tickColor, font: { size: 11 } }
                             },
                             y: {
                                 stacked: true,
-                                grid: { color: '#1e293b' },
+                                grid: { color: gridColor },
                                 ticks: {
-                                    color: '#64748b',
+                                    color: tickColor,
                                     font: { size: 11 },
                                     callback: function(value) {
                                         return formatKRWShort(value);
@@ -969,17 +1008,17 @@
                                 display: true,
                                 position: 'bottom',
                                 labels: {
-                                    color: '#94a3b8',
+                                    color: tickColor,
                                     font: { size: 11, family: 'Inter' },
                                     usePointStyle: true,
                                     padding: 15
                                 }
                             },
                             tooltip: {
-                                backgroundColor: '#0f172a',
-                                titleColor: '#f8fafc',
-                                bodyColor: '#cbd5e1',
-                                borderColor: '#334155',
+                                backgroundColor: tooltipBg,
+                                titleColor: tooltipTitle,
+                                bodyColor: tooltipBody,
+                                borderColor: tooltipBorder,
                                 borderWidth: 1,
                                 padding: 12,
                                 boxPadding: 6,
@@ -1000,12 +1039,12 @@
                         scales: {
                             x: {
                                 grid: { display: false },
-                                ticks: { color: '#64748b', font: { size: 11 } }
+                                ticks: { color: tickColor, font: { size: 11 } }
                             },
                             y: {
-                                grid: { color: '#1e293b' },
+                                grid: { color: gridColor },
                                 ticks: {
-                                    color: '#64748b',
+                                    color: tickColor,
                                     font: { size: 11 },
                                     callback: function(value) {
                                         return formatKRWShort(value);
@@ -1047,17 +1086,17 @@
                                 display: true,
                                 position: 'bottom',
                                 labels: {
-                                    color: '#94a3b8',
+                                    color: tickColor,
                                     font: { size: 11, family: 'Inter' },
                                     usePointStyle: true,
                                     padding: 15
                                 }
                             },
                             tooltip: {
-                                backgroundColor: '#0f172a',
-                                titleColor: '#f8fafc',
-                                bodyColor: '#cbd5e1',
-                                borderColor: '#334155',
+                                backgroundColor: tooltipBg,
+                                titleColor: tooltipTitle,
+                                bodyColor: tooltipBody,
+                                borderColor: tooltipBorder,
                                 borderWidth: 1,
                                 padding: 12,
                                 boxPadding: 6,
@@ -1075,12 +1114,12 @@
                         scales: {
                             x: {
                                 grid: { display: false },
-                                ticks: { color: '#64748b', font: { size: 11 } }
+                                ticks: { color: tickColor, font: { size: 11 } }
                             },
                             y: {
-                                grid: { color: '#1e293b' },
+                                grid: { color: gridColor },
                                 ticks: {
-                                    color: '#64748b',
+                                    color: tickColor,
                                     font: { size: 11 },
                                     callback: function(value) {
                                         return value + '%';
@@ -1101,4 +1140,3 @@
     </script>
 </body>
 </html>
-
