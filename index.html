@@ -445,47 +445,43 @@
 
         // 구글 스프레드시트 CSV 연동 함수
         async function fetchGoogleSheetsData() {
-            const statusMsg = document.getElementById('apiStatusMessage');
-            if (!CSV_URL) return;
-            try {
-                const response = await fetch(CSV_URL + '&_t=' + new Date().getTime());
-                const rawText = await response.text();
-                const lines = rawText.split(/\r?\n/);
+    const statusMsg = document.getElementById('apiStatusMessage');
+    if (!CSV_URL) return;
+    try {
+        const response = await fetch(CSV_URL + '&_t=' + new Date().getTime());
+        const rawText = await response.text();
+        const rows = rawText.split(/\r?\n/).map(row => row.split(','));
 
-                lines.forEach(line => {
-                    let targetId = null;
-                    let isUsd = false;
+        // CSV 행렬에서 직접 값 읽어오기 (엑셀 행 번호 기준 - 1)
+        // 행 11 (인덱스 10): SOL / 행 12 (인덱스 11): SCHD
+        if (rows.length > 11) {
+            // SOL 데이터 (11행: B열=주수, C열=투자원금)
+            const solSharesVal = parseFloat(rows[10]?.[1]?.replace(/[""]/g, ''));
+            const solPrincipalVal = parseFloat(rows[10]?.[2]?.replace(/[""]/g, ''));
+            
+            if (!isNaN(solSharesVal)) document.getElementById('solShares').value = formatWithCommas(solSharesVal);
+            if (!isNaN(solPrincipalVal)) document.getElementById('solPrincipal').value = formatWithCommas(solPrincipalVal);
+        }
 
-                    if (line.includes('SOL') && line.includes('주수')) targetId = 'solShares';
-                    else if (line.includes('SOL') && line.includes('원금')) targetId = 'solPrincipal';
-                    else if (line.includes('SCHD') && line.includes('주수')) targetId = 'schdShares';
-                    else if (line.includes('SCHD') && (line.includes('원금($)') || line.includes('USD'))) {
-                        targetId = 'schdPrincipalUSD';
-                        isUsd = true;
-                    }
+        if (rows.length > 12) {
+            // SCHD 데이터 (12행: B열=주수, C열=투자원금 USD)
+            const schdSharesVal = parseFloat(rows[11]?.[1]?.replace(/[""]/g, ''));
+            const schdPrincipalUSDVal = parseFloat(rows[11]?.[2]?.replace(/[""]/g, ''));
 
-                    if (targetId) {
-                        const match = line.match(/[\d,.]+/g);
-                        if (match) {
-                            const joinedNumStr = match.join('').replace(/,/g, '');
-                            let rawNum = parseFloat(joinedNumStr);
-                            if (!isNaN(rawNum) && rawNum > 0) {
-                                const el = document.getElementById(targetId);
-                                if (el) {
-                                    el.value = formatWithCommas(rawNum, isUsd);
-                                    if (targetId === 'schdPrincipalUSD') {
-                                        onSchdPrincipalUSDInput(el);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-            } catch (err) {
-                console.error('구글 스프레드시트 데이터 연동 실패:', err);
+            if (!isNaN(schdSharesVal)) document.getElementById('schdShares').value = formatWithCommas(schdSharesVal);
+            if (!isNaN(schdPrincipalUSDVal)) {
+                const schdEl = document.getElementById('schdPrincipalUSD');
+                schdEl.value = schdPrincipalUSDVal.toFixed(2);
+                onSchdPrincipalUSDInput(schdEl);
             }
         }
 
+        update();
+    } catch (err) {
+        console.error('구글 스프레드시트 데이터 연동 실패:', err);
+    }
+}
+        
         function formatAndCalculate(inputElem, isFloat = false) {
             const cursorPosition = inputElem.selectionStart;
             const originalLength = inputElem.value.length;
