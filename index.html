@@ -442,35 +442,43 @@
             }
             return Math.round(val).toLocaleString() + '원';
         }
-
-        // 구글 스프레드시트 CSV 연동 함수
-        async function fetchGoogleSheetsData() {
+// 구글 스프레드시트 CSV 연동 함수 (안정성 보완)
+async function fetchGoogleSheetsData() {
     const statusMsg = document.getElementById('apiStatusMessage');
     if (!CSV_URL) return;
     try {
         const response = await fetch(CSV_URL + '&_t=' + new Date().getTime());
         const rawText = await response.text();
-        const rows = rawText.split(/\r?\n/).map(row => row.split(','));
+        
+        // CSV 줄 바꿈 및 쉼표/쌍따옴표 파싱
+        const rows = rawText.split(/\r?\n/).map(row => {
+            return row.split(',').map(cell => cell.replace(/["'\r]/g, '').trim());
+        });
 
-        // CSV 행렬에서 직접 값 읽어오기 (엑셀 행 번호 기준 - 1)
-        // 행 11 (인덱스 10): SOL / 행 12 (인덱스 11): SCHD
-        if (rows.length > 11) {
-            // SOL 데이터 (11행: B열=주수, C열=투자원금)
-            const solSharesVal = parseFloat(rows[10]?.[1]?.replace(/[""]/g, ''));
-            const solPrincipalVal = parseFloat(rows[10]?.[2]?.replace(/[""]/g, ''));
-            
-            if (!isNaN(solSharesVal)) document.getElementById('solShares').value = formatWithCommas(solSharesVal);
-            if (!isNaN(solPrincipalVal)) document.getElementById('solPrincipal').value = formatWithCommas(solPrincipalVal);
+        // 11행 (인덱스 10): SOL 미국배당다우존스
+        if (rows.length > 10) {
+            const solSharesVal = parseFloat(rows[10][1]?.replace(/,/g, ''));
+            const solPrincipalVal = parseFloat(rows[10][2]?.replace(/,/g, ''));
+
+            if (!isNaN(solSharesVal)) {
+                document.getElementById('solShares').value = formatWithCommas(solSharesVal);
+            }
+            if (!isNaN(solPrincipalVal)) {
+                document.getElementById('solPrincipal').value = formatWithCommas(solPrincipalVal);
+            }
         }
 
-        if (rows.length > 12) {
-            // SCHD 데이터 (12행: B열=주수, C열=투자원금 USD)
-            const schdSharesVal = parseFloat(rows[11]?.[1]?.replace(/[""]/g, ''));
-            const schdPrincipalUSDVal = parseFloat(rows[11]?.[2]?.replace(/[""]/g, ''));
+        // 12행 (인덱스 11): SCHD (B열=주수 827, C열=원금$ 26118.5621)
+        if (rows.length > 11) {
+            const schdSharesVal = parseFloat(rows[11][1]?.replace(/,/g, ''));
+            const schdPrincipalUSDVal = parseFloat(rows[11][2]?.replace(/,/g, ''));
 
-            if (!isNaN(schdSharesVal)) document.getElementById('schdShares').value = formatWithCommas(schdSharesVal);
+            if (!isNaN(schdSharesVal)) {
+                document.getElementById('schdShares').value = formatWithCommas(schdSharesVal);
+            }
             if (!isNaN(schdPrincipalUSDVal)) {
                 const schdEl = document.getElementById('schdPrincipalUSD');
+                // 달러 원금 입력칸에 소수점 2자리로 세팅 및 원화 자동 환산 트리거
                 schdEl.value = schdPrincipalUSDVal.toFixed(2);
                 onSchdPrincipalUSDInput(schdEl);
             }
@@ -481,6 +489,7 @@
         console.error('구글 스프레드시트 데이터 연동 실패:', err);
     }
 }
+
         
         function formatAndCalculate(inputElem, isFloat = false) {
             const cursorPosition = inputElem.selectionStart;
