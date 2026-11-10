@@ -455,10 +455,10 @@ async function fetchGoogleSheetsData() {
             return row.split(',').map(cell => cell.replace(/["'\r]/g, '').trim());
         });
 
-        // 11행 (인덱스 10): SOL 미국배당다우존스
-        if (rows.length > 10) {
-            const solSharesVal = parseFloat(rows[10][1]?.replace(/,/g, ''));
-            const solPrincipalVal = parseFloat(rows[10][2]?.replace(/,/g, ''));
+        // 13행 (인덱스 12): SOL 미국배당다우존스
+        if (rows.length > 12) {
+            const solSharesVal = parseFloat(rows[12][1]?.replace(/,/g, ''));
+            const solPrincipalVal = parseFloat(rows[12][2]?.replace(/,/g, ''));
 
             if (!isNaN(solSharesVal)) {
                 document.getElementById('solShares').value = formatWithCommas(solSharesVal);
@@ -468,10 +468,10 @@ async function fetchGoogleSheetsData() {
             }
         }
 
-        // 12행 (인덱스 11): SCHD (B열=주수 827, C열=원금$ 26118.5621)
-        if (rows.length > 11) {
-            const schdSharesVal = parseFloat(rows[11][1]?.replace(/,/g, ''));
-            const schdPrincipalUSDVal = parseFloat(rows[11][2]?.replace(/,/g, ''));
+        // 14행 (인덱스 13): SCHD (B열=주수 827, C열=원금$ 26118.5621)
+        if (rows.length > 13) {
+            const schdSharesVal = parseFloat(rows[13][1]?.replace(/,/g, ''));
+            const schdPrincipalUSDVal = parseFloat(rows[13][2]?.replace(/,/g, ''));
 
             if (!isNaN(schdSharesVal)) {
                 document.getElementById('schdShares').value = formatWithCommas(schdSharesVal);
