@@ -109,7 +109,7 @@
             <h2 class="text-sm font-extrabold text-blue-900 dark:text-blue-400 flex items-center gap-1.5 border-l-4 border-blue-600 pl-2.5">
                 1. SOL 미국배당다우존스 <span class="text-xs font-medium text-slate-500 dark:text-slate-400">(원화 계좌 / 23년 9월~)</span>
             </h2>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">현재 보유주수 (주)</label>
                     <input type="text" id="solShares" value="8,587" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm font-medium text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-blue-500">
@@ -119,10 +119,14 @@
                     <input type="text" id="solPrice" value="13,565" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm font-medium text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-blue-500">
                 </div>
                 <div>
+                    <label class="block text-xs font-bold text-blue-700 dark:text-blue-300 mb-1">평균매수가 (₩)</label>
+                    <input type="text" id="solAvgPrice" value="11,240" oninput="formatAndCalculate(this)" class="w-full bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 rounded-lg p-2 text-sm font-bold text-blue-900 dark:text-blue-200 focus:ring-1 focus:ring-blue-500">
+                </div>
+                <div>
                     <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">매월 추가 적립액 (₩)</label>
                     <input type="text" id="solMonthlyInvest" value="300,000" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm font-medium text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-blue-500">
                 </div>
-                <div>
+                <div class="col-span-2">
                     <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">총 투자원금 (₩)</label>
                     <input type="text" id="solPrincipal" value="96,578,626" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm font-medium text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-blue-500">
                 </div>
@@ -134,7 +138,7 @@
             <h2 class="text-sm font-extrabold text-emerald-900 dark:text-emerald-400 flex items-center gap-1.5 border-l-4 border-emerald-600 pl-2.5">
                 2. SCHD 미국직투 <span class="text-xs font-medium text-slate-500 dark:text-slate-400">(달러 계좌 / 24년 3월~)</span>
             </h2>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">현재 보유주수 (주)</label>
                     <input type="text" id="schdShares" value="827" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm font-medium text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-emerald-500">
@@ -144,11 +148,19 @@
                     <input type="text" id="schdPrice" value="35.27" oninput="formatAndCalculate(this, true)" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm font-medium text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-emerald-500">
                 </div>
                 <div>
+                    <label class="block text-xs font-bold text-emerald-700 dark:text-emerald-300 mb-1">평균매수가 ($)</label>
+                    <input type="text" id="schdAvgPrice" value="31.55" oninput="formatAndCalculate(this, true)" class="w-full bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 rounded-lg p-2 text-sm font-bold text-emerald-900 dark:text-emerald-200 focus:ring-1 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-teal-700 dark:text-teal-300 mb-1">매입환율 (₩/$)</label>
+                    <input type="text" id="schdBuyExchangeRate" value="1,350" oninput="formatAndCalculate(this)" class="w-full bg-teal-50/60 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-900/50 rounded-lg p-2 text-sm font-bold text-teal-900 dark:text-teal-200 focus:ring-1 focus:ring-teal-500">
+                </div>
+                <div>
                     <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">매월 추가 적립액 ($)</label>
                     <input type="text" id="schdMonthlyInvest" value="150" oninput="formatAndCalculate(this, true)" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm font-medium text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-emerald-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">적용 환율 (₩/$)</label>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">현재 적용 환율 (₩/$)</label>
                     <input type="text" id="exchangeRate" value="1,325" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm font-medium text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-emerald-500">
                 </div>
             </div>
@@ -160,8 +172,8 @@
                     <input type="text" id="schdPrincipalUSD" value="26,118.56" oninput="onSchdPrincipalUSDInput(this)" class="w-full bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-800 rounded-lg p-2 text-sm font-bold text-emerald-950 dark:text-emerald-200 focus:ring-2 focus:ring-emerald-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-emerald-900 dark:text-emerald-300 mb-1">SCHD 총 투자원금 (₩)</label>
-                    <input type="text" id="schdPrincipalKRW" value="34,607,092" oninput="onSchdPrincipalKRWInput(this)" class="w-full bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-800 rounded-lg p-2 text-sm font-bold text-emerald-950 dark:text-emerald-200 focus:ring-2 focus:ring-emerald-500">
+                    <label class="block text-xs font-bold text-emerald-900 dark:text-emerald-300 mb-1">SCHD 총 투자원금 (₩, 매입환율 반영)</label>
+                    <input type="text" id="schdPrincipalKRW" value="35,260,056" oninput="onSchdPrincipalKRWInput(this)" class="w-full bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-800 rounded-lg p-2 text-sm font-bold text-emerald-950 dark:text-emerald-200 focus:ring-2 focus:ring-emerald-500">
                 </div>
             </div>
         </div>
@@ -443,7 +455,7 @@
             return Math.round(val).toLocaleString() + '원';
         }
 
-        // 구글 스프레드시트 CSV 연동 함수
+        // 구글 스프레드시트 CSV 연동 함수 (매입환율 포함 연동)
         async function fetchGoogleSheetsData() {
             if (!CSV_URL) return;
             try {
@@ -458,6 +470,7 @@
                 if (rows.length > 12) {
                     const solSharesVal = parseFloat(rows[12][1]?.replace(/,/g, ''));
                     const solPrincipalVal = parseFloat(rows[12][2]?.replace(/,/g, ''));
+                    const solAvgPriceVal = parseFloat(rows[12][3]?.replace(/,/g, '')) || 11240;
 
                     if (!isNaN(solSharesVal)) {
                         document.getElementById('solShares').value = formatWithCommas(solSharesVal);
@@ -465,12 +478,17 @@
                     if (!isNaN(solPrincipalVal)) {
                         document.getElementById('solPrincipal').value = formatWithCommas(solPrincipalVal);
                     }
+                    if (!isNaN(solAvgPriceVal)) {
+                        document.getElementById('solAvgPrice').value = formatWithCommas(solAvgPriceVal);
+                    }
                 }
 
-                // 14행 (인덱스 13): SCHD
+                // 14행 (인덱스 13): SCHD 직투
                 if (rows.length > 13) {
                     const schdSharesVal = parseFloat(rows[13][1]?.replace(/,/g, ''));
                     const schdPrincipalUSDVal = parseFloat(rows[13][2]?.replace(/,/g, ''));
+                    const schdAvgPriceVal = parseFloat(rows[13][3]?.replace(/,/g, '')) || 31.55;
+                    const schdBuyExRateVal = parseFloat(rows[13][4]?.replace(/,/g, '')) || 1350;
 
                     if (!isNaN(schdSharesVal)) {
                         document.getElementById('schdShares').value = formatWithCommas(schdSharesVal);
@@ -479,6 +497,12 @@
                         const schdEl = document.getElementById('schdPrincipalUSD');
                         schdEl.value = schdPrincipalUSDVal.toFixed(2);
                         onSchdPrincipalUSDInput(schdEl);
+                    }
+                    if (!isNaN(schdAvgPriceVal)) {
+                        document.getElementById('schdAvgPrice').value = schdAvgPriceVal.toFixed(2);
+                    }
+                    if (!isNaN(schdBuyExRateVal)) {
+                        document.getElementById('schdBuyExchangeRate').value = formatWithCommas(schdBuyExRateVal);
                     }
                 }
 
@@ -539,8 +563,8 @@
             inputElem.value = parts.join('.');
 
             const usdVal = parseFormattedNumber(inputElem.value);
-            const exRate = parseFormattedNumber(document.getElementById('exchangeRate').value) || 1325;
-            const krwVal = Math.round(usdVal * exRate);
+            const buyExRate = parseFormattedNumber(document.getElementById('schdBuyExchangeRate').value) || 1350;
+            const krwVal = Math.round(usdVal * buyExRate);
 
             document.getElementById('schdPrincipalKRW').value = formatWithCommas(krwVal);
 
@@ -562,8 +586,8 @@
             const numericVal = parseFormattedNumber(inputElem.value);
             inputElem.value = formatWithCommas(numericVal);
 
-            const exRate = parseFormattedNumber(document.getElementById('exchangeRate').value) || 1325;
-            const usdVal = exRate > 0 ? numericVal / exRate : 0;
+            const buyExRate = parseFormattedNumber(document.getElementById('schdBuyExchangeRate').value) || 1350;
+            const usdVal = buyExRate > 0 ? numericVal / buyExRate : 0;
 
             const parts = usdVal.toFixed(2).split('.');
             parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -680,7 +704,7 @@
 
                 if (fetchedFx && fetchedSchd && fetchedSol) {
                     statusMsg.className = "text-[11px] font-medium text-emerald-600 dark:text-emerald-400 mt-2";
-                    statusMsg.innerText = `✅ 자동 동기화 완료! (환율: ₩${document.getElementById('exchangeRate').value} / SOL: ₩${document.getElementById('solPrice').value} / SCHD: $${document.getElementById('schdPrice').value})`;
+                    statusMsg.innerText = `✅ 자동 동기화 완료! (현재환율: ₩${document.getElementById('exchangeRate').value} / SOL: ₩${document.getElementById('solPrice').value} / SCHD: $${document.getElementById('schdPrice').value})`;
                 } else {
                     statusMsg.className = "text-[11px] font-medium text-amber-600 dark:text-amber-400 mt-2";
                     statusMsg.innerText = "⚠️ 일부 시세 데이터만 수신되었습니다.";
@@ -711,12 +735,14 @@
             document.getElementById('targetDateBadge').innerText = `${targetYear}년 ${targetMonth}월 (${yearsNum.toFixed(1)}년 후)`;
 
             const exRate = parseFormattedNumber(document.getElementById('exchangeRate').value) || 1325;
+            const schdBuyExRate = parseFormattedNumber(document.getElementById('schdBuyExchangeRate').value) || 1350;
+
             const initialDivYield = (parseFloat(document.getElementById('divYield').value) || 3.5) / 100;
             const divGrowthRate = (parseFloat(document.getElementById('divGrowth').value) || 8.0) / 100;
             const cagrInput = parseFloat(document.getElementById('cagr').value) || 6.5;
             const cagr = cagrInput / 100;
 
-            const inflationInput = parseFloat(document.getElementById('inflationRate').value) || 2.5;
+            const inflationInput = parseFloat(document.getElementById('inflationRate').value) || 3.0;
             const inflationRate = inflationInput / 100;
 
             const monthlyCagr = Math.pow(1 + cagr, 1 / 12) - 1;
@@ -724,11 +750,13 @@
 
             const initialSolShares = parseFormattedNumber(document.getElementById('solShares').value) || 0;
             let solPrice = parseFormattedNumber(document.getElementById('solPrice').value) || 13565;
+            const solAvgPrice = parseFormattedNumber(document.getElementById('solAvgPrice').value) || solPrice;
             const solMonthlyInvest = parseFormattedNumber(document.getElementById('solMonthlyInvest').value) || 0;
             let solPrincipal = parseFormattedNumber(document.getElementById('solPrincipal').value) || 0;
 
             const initialSchdShares = parseFormattedNumber(document.getElementById('schdShares').value) || 0;
             let schdPrice = parseFormattedNumber(document.getElementById('schdPrice').value) || 35.27;
+            const schdAvgPrice = parseFormattedNumber(document.getElementById('schdAvgPrice').value) || schdPrice;
             const schdMonthlyInvest = parseFormattedNumber(document.getElementById('schdMonthlyInvest').value) || 0;
             let schdPrincipalUSD = parseFormattedNumber(document.getElementById('schdPrincipalUSD').value) || 26118.56;
 
@@ -784,13 +812,13 @@
                     const totalValuation = solVal + schdValKRW;
 
                     const cumulativeSolInvested = solPrincipal + (solMonthlyInvest * m);
-                    const cumulativeSchdInvestedKRW = (schdPrincipalUSD + (schdMonthlyInvest * m)) * exRate;
+                    // SCHD 원금은 매입환율 기준 누적
+                    const cumulativeSchdInvestedKRW = (schdPrincipalUSD + (schdMonthlyInvest * m)) * schdBuyExRate;
                     const totalPrincipal = cumulativeSolInvested + cumulativeSchdInvestedKRW;
 
                     const totalReinvested = totalSolReinvestedDivKRW + (totalSchdReinvestedDivUSD * exRate);
                     const capitalGain = Math.max(0, totalValuation - totalPrincipal - totalReinvested);
 
-                    // 세후 명목 월 배당금 개별 계산
                     const currentSolMonthlyDivNominal = (solVal * solDivYieldDRIP / 12) * (1 - TAX_RATE);
                     const currentSchdMonthlyDivNominal = (schdValKRW * schdDivYieldDRIP / 12) * (1 - TAX_RATE);
                     const currentMonthlyDivNominal = currentSolMonthlyDivNominal + currentSchdMonthlyDivNominal;
@@ -817,7 +845,7 @@
 
             const grandSolPrincipalKRW = solPrincipal + (solMonthlyInvest * monthsInput);
             const grandSchdPrincipalUSD = schdPrincipalUSD + (schdMonthlyInvest * monthsInput);
-            const grandSchdPrincipalKRW = grandSchdPrincipalUSD * exRate;
+            const grandSchdPrincipalKRW = grandSchdPrincipalUSD * schdBuyExRate;
             const grandPrincipalKRW = grandSolPrincipalKRW + grandSchdPrincipalKRW;
 
             const solValuationDRIP = solSharesDRIP * solPriceDRIP;
