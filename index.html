@@ -442,55 +442,52 @@
             }
             return Math.round(val).toLocaleString() + '원';
         }
-// 구글 스프레드시트 CSV 연동 함수 (안정성 보완)
-async function fetchGoogleSheetsData() {
-    const statusMsg = document.getElementById('apiStatusMessage');
-    if (!CSV_URL) return;
-    try {
-        const response = await fetch(CSV_URL + '&_t=' + new Date().getTime());
-        const rawText = await response.text();
-        
-        // CSV 줄 바꿈 및 쉼표/쌍따옴표 파싱
-        const rows = rawText.split(/\r?\n/).map(row => {
-            return row.split(',').map(cell => cell.replace(/["'\r]/g, '').trim());
-        });
 
-        // 13행 (인덱스 12): SOL 미국배당다우존스
-        if (rows.length > 12) {
-            const solSharesVal = parseFloat(rows[12][1]?.replace(/,/g, ''));
-            const solPrincipalVal = parseFloat(rows[12][2]?.replace(/,/g, ''));
+        // 구글 스프레드시트 CSV 연동 함수
+        async function fetchGoogleSheetsData() {
+            if (!CSV_URL) return;
+            try {
+                const response = await fetch(CSV_URL + '&_t=' + new Date().getTime());
+                const rawText = await response.text();
+                
+                const rows = rawText.split(/\r?\n/).map(row => {
+                    return row.split(',').map(cell => cell.replace(/["'\r]/g, '').trim());
+                });
 
-            if (!isNaN(solSharesVal)) {
-                document.getElementById('solShares').value = formatWithCommas(solSharesVal);
-            }
-            if (!isNaN(solPrincipalVal)) {
-                document.getElementById('solPrincipal').value = formatWithCommas(solPrincipalVal);
+                // 13행 (인덱스 12): SOL 미국배당다우존스
+                if (rows.length > 12) {
+                    const solSharesVal = parseFloat(rows[12][1]?.replace(/,/g, ''));
+                    const solPrincipalVal = parseFloat(rows[12][2]?.replace(/,/g, ''));
+
+                    if (!isNaN(solSharesVal)) {
+                        document.getElementById('solShares').value = formatWithCommas(solSharesVal);
+                    }
+                    if (!isNaN(solPrincipalVal)) {
+                        document.getElementById('solPrincipal').value = formatWithCommas(solPrincipalVal);
+                    }
+                }
+
+                // 14행 (인덱스 13): SCHD
+                if (rows.length > 13) {
+                    const schdSharesVal = parseFloat(rows[13][1]?.replace(/,/g, ''));
+                    const schdPrincipalUSDVal = parseFloat(rows[13][2]?.replace(/,/g, ''));
+
+                    if (!isNaN(schdSharesVal)) {
+                        document.getElementById('schdShares').value = formatWithCommas(schdSharesVal);
+                    }
+                    if (!isNaN(schdPrincipalUSDVal)) {
+                        const schdEl = document.getElementById('schdPrincipalUSD');
+                        schdEl.value = schdPrincipalUSDVal.toFixed(2);
+                        onSchdPrincipalUSDInput(schdEl);
+                    }
+                }
+
+                update();
+            } catch (err) {
+                console.error('구글 스프레드시트 데이터 연동 실패:', err);
             }
         }
 
-        // 14행 (인덱스 13): SCHD (B열=주수 827, C열=원금$ 26118.5621)
-        if (rows.length > 13) {
-            const schdSharesVal = parseFloat(rows[13][1]?.replace(/,/g, ''));
-            const schdPrincipalUSDVal = parseFloat(rows[13][2]?.replace(/,/g, ''));
-
-            if (!isNaN(schdSharesVal)) {
-                document.getElementById('schdShares').value = formatWithCommas(schdSharesVal);
-            }
-            if (!isNaN(schdPrincipalUSDVal)) {
-                const schdEl = document.getElementById('schdPrincipalUSD');
-                // 달러 원금 입력칸에 소수점 2자리로 세팅 및 원화 자동 환산 트리거
-                schdEl.value = schdPrincipalUSDVal.toFixed(2);
-                onSchdPrincipalUSDInput(schdEl);
-            }
-        }
-
-        update();
-    } catch (err) {
-        console.error('구글 스프레드시트 데이터 연동 실패:', err);
-    }
-}
-
-        
         function formatAndCalculate(inputElem, isFloat = false) {
             const cursorPosition = inputElem.selectionStart;
             const originalLength = inputElem.value.length;
@@ -719,7 +716,7 @@ async function fetchGoogleSheetsData() {
             const cagrInput = parseFloat(document.getElementById('cagr').value) || 6.5;
             const cagr = cagrInput / 100;
 
-            const inflationInput = parseFloat(document.getElementById('inflationRate').value) || 3.0;
+            const inflationInput = parseFloat(document.getElementById('inflationRate').value) || 2.5;
             const inflationRate = inflationInput / 100;
 
             const monthlyCagr = Math.pow(1 + cagr, 1 / 12) - 1;
@@ -793,7 +790,11 @@ async function fetchGoogleSheetsData() {
                     const totalReinvested = totalSolReinvestedDivKRW + (totalSchdReinvestedDivUSD * exRate);
                     const capitalGain = Math.max(0, totalValuation - totalPrincipal - totalReinvested);
 
-                    const currentMonthlyDivNominal = (solVal * solDivYieldDRIP / 12 * (1 - TAX_RATE)) + (schdValKRW * schdDivYieldDRIP / 12 * (1 - TAX_RATE));
+                    // 세후 명목 월 배당금 개별 계산
+                    const currentSolMonthlyDivNominal = (solVal * solDivYieldDRIP / 12) * (1 - TAX_RATE);
+                    const currentSchdMonthlyDivNominal = (schdValKRW * schdDivYieldDRIP / 12) * (1 - TAX_RATE);
+                    const currentMonthlyDivNominal = currentSolMonthlyDivNominal + currentSchdMonthlyDivNominal;
+
                     const yearsPassed = m / 12;
                     const currentMonthlyDivReal = currentMonthlyDivNominal / Math.pow(1 + inflationRate, yearsPassed);
 
@@ -807,6 +808,8 @@ async function fetchGoogleSheetsData() {
                         totalValuation: Math.round(totalValuation),
                         monthlyDivNominal: Math.round(currentMonthlyDivNominal),
                         monthlyDivReal: Math.round(currentMonthlyDivReal),
+                        solMonthlyDivNominal: Math.round(currentSolMonthlyDivNominal),
+                        schdMonthlyDivNominal: Math.round(currentSchdMonthlyDivNominal),
                         yoc: parseFloat(currentYoC.toFixed(2))
                     });
                 }
@@ -1023,7 +1026,7 @@ async function fetchGoogleSheetsData() {
                         labels: labels,
                         datasets: [
                             {
-                                label: '예상 명목 월 배당금',
+                                label: '예상 명목 월 배당금 (합계)',
                                 data: yearlyChartData.map(d => d.monthlyDivNominal),
                                 borderColor: '#3b82f6',
                                 backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -1043,6 +1046,30 @@ async function fetchGoogleSheetsData() {
                                 pointBackgroundColor: '#10b981',
                                 pointRadius: 4,
                                 pointHoverRadius: 6,
+                                tension: 0.3,
+                                fill: false
+                            },
+                            {
+                                label: 'SOL 미국배당다우존스 월 배당금',
+                                data: yearlyChartData.map(d => d.solMonthlyDivNominal),
+                                borderColor: '#a855f7',
+                                borderDash: [3, 3],
+                                borderWidth: 2,
+                                pointBackgroundColor: '#a855f7',
+                                pointRadius: 3.5,
+                                pointHoverRadius: 5.5,
+                                tension: 0.3,
+                                fill: false
+                            },
+                            {
+                                label: 'SCHD 월 배당금 (원화 환산)',
+                                data: yearlyChartData.map(d => d.schdMonthlyDivNominal),
+                                borderColor: '#f59e0b',
+                                borderDash: [3, 3],
+                                borderWidth: 2,
+                                pointBackgroundColor: '#f59e0b',
+                                pointRadius: 3.5,
+                                pointHoverRadius: 5.5,
                                 tension: 0.3,
                                 fill: false
                             }
