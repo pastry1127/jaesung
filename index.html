@@ -66,9 +66,68 @@
                     <span>⚡ 실시간 주가/환율 연동</span>
                 </button>
                 <button onclick="fetchGoogleSheetsData()" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 transition-all text-white text-xs md:text-sm font-semibold rounded-xl shadow-md shadow-emerald-100 dark:shadow-none">
-                    <span>📊 구글시트 자산 동기화</span>
+                    <span>📊 구글시트(은퇴자산관리) 동기화</span>
                 </button>
                 <div id="apiStatusMessage" class="w-full text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1 min-h-[16px]"></div>
+            </div>
+        </div>
+
+        <!-- Current Live Dividend Yield & Current YoC Summary Bar (연배당금 입력 포함) -->
+        <div class="bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-4 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/80 dark:border-slate-700 pb-2">
+                <span class="text-xs font-extrabold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    📌 현재 실시간 배당률 현황 (현재 주가 및 내 평단 기준)
+                </span>
+                <span class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400" id="totalCurrentYoCBadge">
+                    통합 현재 매수가배당률: 0.00%
+                </span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                <!-- SCHD 현재 배당률 및 연배당금 -->
+                <div class="bg-white dark:bg-slate-900/90 p-3 rounded-xl border border-emerald-200/70 dark:border-emerald-900/50 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-emerald-800 dark:text-emerald-300">🇺🇸 SCHD 현재 배당률</span>
+                        <span class="text-[10px] text-slate-400" id="schdAnnualDivHint">연배당금 $1.05 기준</span>
+                    </div>
+                    <div>
+                        <label for="schdAnnualDivPerShare" class="block text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 mb-1">
+                            연배당금 ($ / 은퇴자산관리 14행)
+                        </label>
+                        <input type="text" id="schdAnnualDivPerShare" value="1.05" oninput="formatAndCalculate(this, true)"
+                            class="w-full bg-emerald-50/50 dark:bg-slate-800 border border-emerald-200 dark:border-emerald-800 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                    </div>
+                    <div class="flex items-center justify-between pt-0.5 border-t border-slate-100 dark:border-slate-800">
+                        <span class="text-slate-500 dark:text-slate-400">현재 시가배당률 (주가 반영):</span>
+                        <span class="font-extrabold text-sm text-slate-900 dark:text-white" id="schdLiveMarketYield">2.98%</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-500 dark:text-slate-400">내 현재 매수가 배당률 (YoC):</span>
+                        <span class="font-extrabold text-sm text-emerald-600 dark:text-emerald-400" id="schdLiveCurrentYoC">3.33%</span>
+                    </div>
+                </div>
+
+                <!-- SOL 현재 배당률 및 연배당금 -->
+                <div class="bg-white dark:bg-slate-900/90 p-3 rounded-xl border border-blue-200/70 dark:border-blue-900/50 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-blue-800 dark:text-blue-300">🇰🇷 SOL 미국배당다우존스 현재</span>
+                        <span class="text-[10px] text-slate-400" id="solAnnualDivHint">연배당금 ₩440 기준</span>
+                    </div>
+                    <div>
+                        <label for="solAnnualDivPerShare" class="block text-[11px] font-semibold text-blue-700 dark:text-blue-400 mb-1">
+                            연배당금 (₩ / 은퇴자산관리 13행)
+                        </label>
+                        <input type="text" id="solAnnualDivPerShare" value="440" oninput="formatAndCalculate(this)"
+                            class="w-full bg-blue-50/50 dark:bg-slate-800 border border-blue-200 dark:border-blue-800 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+                    <div class="flex items-center justify-between pt-0.5 border-t border-slate-100 dark:border-slate-800">
+                        <span class="text-slate-500 dark:text-slate-400">현재 시가배당률 (주가 반영):</span>
+                        <span class="font-extrabold text-sm text-slate-900 dark:text-white" id="solLiveMarketYield">3.24%</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-500 dark:text-slate-400">내 현재 매수가 배당률 (YoC):</span>
+                        <span class="font-extrabold text-sm text-blue-600 dark:text-blue-400" id="solLiveCurrentYoC">3.91%</span>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -138,7 +197,7 @@
             <h2 class="text-sm font-extrabold text-emerald-900 dark:text-emerald-400 flex items-center gap-1.5 border-l-4 border-emerald-600 pl-2.5">
                 2. SCHD 미국직투 <span class="text-xs font-medium text-slate-500 dark:text-slate-400">(달러 계좌 / 24년 3월~)</span>
             </h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">현재 보유주수 (주)</label>
                     <input type="text" id="schdShares" value="827" oninput="formatAndCalculate(this)" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm font-medium text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-emerald-500">
@@ -181,11 +240,11 @@
         <!-- Section 3: Shared Growth & Inflation Assumptions -->
         <div class="space-y-3">
             <h2 class="text-sm font-extrabold text-amber-900 dark:text-amber-400 flex items-center gap-1.5 border-l-4 border-amber-500 pl-2.5">
-                3. 성장, 배당 및 물가상승률 (공동 적용)
+                3. 미래 시뮬레이션 가정 (공동 적용)
             </h2>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">연 배당수익률 (%)</label>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">예측용 시가배당률 (%)</label>
                     <input type="text" id="divYield" value="3.5" oninput="formatDecimalInput(this)" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm font-medium text-slate-800 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-amber-500">
                 </div>
                 <div>
@@ -333,13 +392,13 @@
                         <span class="text-[10px] text-blue-700 dark:text-blue-400 font-bold" id="solResShares">0 주</span>
                     </div>
                     <div class="space-y-1.5">
-                        <div class="text-xs text-slate-500 dark:text-slate-400">평가금액</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400">예상 평가금액</div>
                         <div class="text-base font-extrabold text-blue-950 dark:text-blue-200" id="solResVal">₩ 0</div>
                         <div class="text-xs text-emerald-700 dark:text-emerald-400 font-bold" id="solResDivText">월 배당: ₩ 0 / 월</div>
                         
-                        <div class="flex items-center gap-1.5 pt-1">
-                            <span class="text-[10px] bg-slate-200/80 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded-md font-semibold" id="solMarketYieldBadge">시가배당률: 3.50%</span>
-                            <span class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-md font-bold shadow-sm" id="solYoCBadge">매수가배당률: 3.50%</span>
+                        <div class="flex flex-wrap items-center gap-1.5 pt-1">
+                            <span class="text-[10px] bg-slate-200/80 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded-md font-semibold" id="solMarketYieldBadge">현재 시가배당률: 3.24%</span>
+                            <span class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-md font-bold shadow-sm" id="solYoCBadge">현재 매수가배당률: 3.91%</span>
                         </div>
                     </div>
                     <div class="bg-white/80 dark:bg-slate-800/80 p-2.5 rounded-lg border border-blue-100 dark:border-blue-900/40 text-[11px] space-y-1">
@@ -361,13 +420,13 @@
                         <span class="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold" id="schdResShares">0 주</span>
                     </div>
                     <div class="space-y-1.5">
-                        <div class="text-xs text-slate-500 dark:text-slate-400">평가금액</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400">예상 평가금액</div>
                         <div class="text-base font-extrabold text-emerald-950 dark:text-emerald-200" id="schdResVal">$ 0</div>
                         <div class="text-xs text-emerald-700 dark:text-emerald-400 font-bold" id="schdResDivText">월 배당: $ 0 / 월</div>
                         
-                        <div class="flex items-center gap-1.5 pt-1">
-                            <span class="text-[10px] bg-slate-200/80 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded-md font-semibold" id="schdMarketYieldBadge">시가배당률: 3.50%</span>
-                            <span class="text-[10px] bg-emerald-600 text-white px-2 py-0.5 rounded-md font-bold shadow-sm" id="schdYoCBadge">매수가배당률: 3.50%</span>
+                        <div class="flex flex-wrap items-center gap-1.5 pt-1">
+                            <span class="text-[10px] bg-slate-200/80 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded-md font-semibold" id="schdMarketYieldBadge">현재 시가배당률: 2.98%</span>
+                            <span class="text-[10px] bg-emerald-600 text-white px-2 py-0.5 rounded-md font-bold shadow-sm" id="schdYoCBadge">현재 매수가배당률: 3.33%</span>
                         </div>
                     </div>
                     <div class="bg-white/80 dark:bg-slate-800/80 p-2.5 rounded-lg border border-emerald-100 dark:border-emerald-900/40 text-[11px] space-y-1">
@@ -388,7 +447,10 @@
     </div>
 
     <script>
-        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTsfWHfBBs2owjyhb8FWBRAN3wMN_93WAulOu6mJpDrPubgAakHFJzGS7nTkbi-JmMMbxlycIeQUbFf/pub?gid=1655940963&single=true&output=csv';
+        const SHEET_NAME = '은퇴자산관리';
+        const PUB_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTsfWHfBBs2owjyhb8FWBRAN3wMN_93WAulOu6mJpDrPubgAakHFJzGS7nTkbi-JmMMbxlycIeQUbFf/pub?gid=1655940963&single=true&output=csv';
+        const GVIZ_CSV_URL = `https://docs.google.com/spreadsheets/d/e/2PACX-1vTsfWHfBBs2owjyhb8FWBRAN3wMN_93WAulOu6mJpDrPubgAakHFJzGS7nTkbi-JmMMbxlycIeQUbFf/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
+
         let isSyncingSchdPrincipal = false;
         const TAX_RATE = 0.15; // 배당소득세 15% 반영
         let chartInstance = null;
@@ -455,22 +517,59 @@
             return Math.round(val).toLocaleString() + '원';
         }
 
-        // 구글 스프레드시트 CSV 연동 함수 (매입환율 포함 연동)
-        async function fetchGoogleSheetsData() {
-            if (!CSV_URL) return;
-            try {
-                const response = await fetch(CSV_URL + '&_t=' + new Date().getTime());
-                const rawText = await response.text();
-                
-                const rows = rawText.split(/\r?\n/).map(row => {
-                    return row.split(',').map(cell => cell.replace(/["'\r]/g, '').trim());
-                });
+        function parseCsvRows(rawText) {
+            return rawText.split(/\r?\n/).filter(line => line.trim() !== '').map(row => {
+                const matches = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+                if (matches) {
+                    return matches.map(cell => cell.replace(/^"|"$/g, '').replace(/""/g, '"').trim());
+                }
+                return row.split(',').map(cell => cell.replace(/["'\r]/g, '').trim());
+            });
+        }
 
-                // 13행 (인덱스 12): SOL 미국배당다우존스
+        // 구글 스프레드시트 '은퇴자산관리' 탭 (SOL: 13행, SCHD: 14행) 데이터 연동
+        async function fetchGoogleSheetsData() {
+            const statusMsg = document.getElementById('apiStatusMessage');
+            let rawText = '';
+            let sourceLabel = '';
+
+            try {
+                const gvizRes = await fetch(GVIZ_CSV_URL + '&_t=' + new Date().getTime());
+                if (gvizRes.ok) {
+                    const txt = await gvizRes.text();
+                    if (txt && !txt.includes('<!DOCTYPE html>') && txt.includes(',')) {
+                        rawText = txt;
+                        sourceLabel = `${SHEET_NAME} 탭`;
+                    }
+                }
+            } catch (e) {
+                console.warn('은퇴자산관리 시트 직접 CSV 조회 실패, 기본 게시 URL로 폴백합니다.', e);
+            }
+
+            if (!rawText) {
+                try {
+                    const pubRes = await fetch(PUB_CSV_URL + '&_t=' + new Date().getTime());
+                    if (pubRes.ok) {
+                        rawText = await pubRes.text();
+                        sourceLabel = '연동 시트(13·14행)';
+                    }
+                } catch (err) {
+                    console.error('구글 스프레드시트 데이터 연동 실패:', err);
+                }
+            }
+
+            if (!rawText) return;
+
+            try {
+                const rows = parseCsvRows(rawText);
+
+                // 13행 (0-based index 12): SOL 미국배당다우존스
                 if (rows.length > 12) {
-                    const solSharesVal = parseFloat(rows[12][1]?.replace(/,/g, ''));
-                    const solPrincipalVal = parseFloat(rows[12][2]?.replace(/,/g, ''));
-                    const solAvgPriceVal = parseFloat(rows[12][3]?.replace(/,/g, '')) || 11240;
+                    const solRow = rows[12];
+                    const solSharesVal = parseFloat(solRow[1]?.replace(/[^0-9.-]/g, ''));
+                    const solPrincipalVal = parseFloat(solRow[2]?.replace(/[^0-9.-]/g, ''));
+                    const solAvgPriceVal = parseFloat(solRow[3]?.replace(/[^0-9.-]/g, ''));
+                    const solAnnualDivVal = parseFloat(solRow[4]?.replace(/[^0-9.-]/g, ''));
 
                     if (!isNaN(solSharesVal)) {
                         document.getElementById('solShares').value = formatWithCommas(solSharesVal);
@@ -478,17 +577,22 @@
                     if (!isNaN(solPrincipalVal)) {
                         document.getElementById('solPrincipal').value = formatWithCommas(solPrincipalVal);
                     }
-                    if (!isNaN(solAvgPriceVal)) {
+                    if (!isNaN(solAvgPriceVal) && solAvgPriceVal > 0) {
                         document.getElementById('solAvgPrice').value = formatWithCommas(solAvgPriceVal);
+                    }
+                    if (!isNaN(solAnnualDivVal) && solAnnualDivVal > 0) {
+                        document.getElementById('solAnnualDivPerShare').value = formatWithCommas(solAnnualDivVal);
                     }
                 }
 
-                // 14행 (인덱스 13): SCHD 직투
+                // 14행 (0-based index 13): SCHD 미국직투
                 if (rows.length > 13) {
-                    const schdSharesVal = parseFloat(rows[13][1]?.replace(/,/g, ''));
-                    const schdPrincipalUSDVal = parseFloat(rows[13][2]?.replace(/,/g, ''));
-                    const schdAvgPriceVal = parseFloat(rows[13][3]?.replace(/,/g, '')) || 31.55;
-                    const schdBuyExRateVal = parseFloat(rows[13][4]?.replace(/,/g, '')) || 1350;
+                    const schdRow = rows[13];
+                    const schdSharesVal = parseFloat(schdRow[1]?.replace(/[^0-9.-]/g, ''));
+                    const schdPrincipalUSDVal = parseFloat(schdRow[2]?.replace(/[^0-9.-]/g, ''));
+                    const schdAvgPriceVal = parseFloat(schdRow[3]?.replace(/[^0-9.-]/g, ''));
+                    const schdBuyExRateVal = parseFloat(schdRow[4]?.replace(/[^0-9.-]/g, ''));
+                    const schdAnnualDivVal = parseFloat(schdRow[5]?.replace(/[^0-9.-]/g, ''));
 
                     if (!isNaN(schdSharesVal)) {
                         document.getElementById('schdShares').value = formatWithCommas(schdSharesVal);
@@ -498,17 +602,25 @@
                         schdEl.value = schdPrincipalUSDVal.toFixed(2);
                         onSchdPrincipalUSDInput(schdEl);
                     }
-                    if (!isNaN(schdAvgPriceVal)) {
+                    if (!isNaN(schdAvgPriceVal) && schdAvgPriceVal > 0) {
                         document.getElementById('schdAvgPrice').value = schdAvgPriceVal.toFixed(2);
                     }
-                    if (!isNaN(schdBuyExRateVal)) {
+                    if (!isNaN(schdBuyExRateVal) && schdBuyExRateVal > 0) {
                         document.getElementById('schdBuyExchangeRate').value = formatWithCommas(schdBuyExRateVal);
                     }
+                    if (!isNaN(schdAnnualDivVal) && schdAnnualDivVal > 0) {
+                        document.getElementById('schdAnnualDivPerShare').value = schdAnnualDivVal.toFixed(2);
+                    }
+                }
+
+                if (statusMsg && sourceLabel) {
+                    statusMsg.className = "text-[11px] font-medium text-emerald-600 dark:text-emerald-400 mt-2";
+                    statusMsg.innerText = `✅ ${sourceLabel} (SOL 13행 / SCHD 14행) 연배당금 및 보유 데이터 동기화 완료`;
                 }
 
                 update();
             } catch (err) {
-                console.error('구글 스프레드시트 데이터 연동 실패:', err);
+                console.error('구글 스프레드시트 파싱 실패:', err);
             }
         }
 
@@ -751,14 +863,37 @@
             const initialSolShares = parseFormattedNumber(document.getElementById('solShares').value) || 0;
             let solPrice = parseFormattedNumber(document.getElementById('solPrice').value) || 13565;
             const solAvgPrice = parseFormattedNumber(document.getElementById('solAvgPrice').value) || solPrice;
+            const solAnnualDivPerShare = parseFormattedNumber(document.getElementById('solAnnualDivPerShare').value) || 440;
             const solMonthlyInvest = parseFormattedNumber(document.getElementById('solMonthlyInvest').value) || 0;
             let solPrincipal = parseFormattedNumber(document.getElementById('solPrincipal').value) || 0;
 
             const initialSchdShares = parseFormattedNumber(document.getElementById('schdShares').value) || 0;
             let schdPrice = parseFormattedNumber(document.getElementById('schdPrice').value) || 35.27;
             const schdAvgPrice = parseFormattedNumber(document.getElementById('schdAvgPrice').value) || schdPrice;
+            const schdAnnualDivPerShare = parseFormattedNumber(document.getElementById('schdAnnualDivPerShare').value) || 1.05;
             const schdMonthlyInvest = parseFormattedNumber(document.getElementById('schdMonthlyInvest').value) || 0;
             let schdPrincipalUSD = parseFormattedNumber(document.getElementById('schdPrincipalUSD').value) || 26118.56;
+
+            // 현재 실시간 시가배당률 및 현재 매수가 배당률(YoC) 계산
+            const schdLiveMarketYield = schdPrice > 0 ? (schdAnnualDivPerShare / schdPrice) * 100 : 0;
+            const schdLiveCurrentYoC = schdAvgPrice > 0 ? (schdAnnualDivPerShare / schdAvgPrice) * 100 : 0;
+
+            const solLiveMarketYield = solPrice > 0 ? (solAnnualDivPerShare / solPrice) * 100 : 0;
+            const solLiveCurrentYoC = solAvgPrice > 0 ? (solAnnualDivPerShare / solAvgPrice) * 100 : 0;
+
+            const currentAnnualDivTotalKRW = (initialSolShares * solAnnualDivPerShare) + (initialSchdShares * schdAnnualDivPerShare * exRate);
+            const currentTotalPrincipalKRW = solPrincipal + (schdPrincipalUSD * schdBuyExRate);
+            const totalCurrentYoC = currentTotalPrincipalKRW > 0 ? (currentAnnualDivTotalKRW / currentTotalPrincipalKRW) * 100 : 0;
+
+            document.getElementById('schdAnnualDivHint').innerText = `연배당금 $${schdAnnualDivPerShare.toFixed(2)} 기준`;
+            document.getElementById('schdLiveMarketYield').innerText = `${schdLiveMarketYield.toFixed(2)}%`;
+            document.getElementById('schdLiveCurrentYoC').innerText = `${schdLiveCurrentYoC.toFixed(2)}%`;
+
+            document.getElementById('solAnnualDivHint').innerText = `연배당금 ₩${Math.round(solAnnualDivPerShare).toLocaleString()} 기준`;
+            document.getElementById('solLiveMarketYield').innerText = `${solLiveMarketYield.toFixed(2)}%`;
+            document.getElementById('solLiveCurrentYoC').innerText = `${solLiveCurrentYoC.toFixed(2)}%`;
+
+            document.getElementById('totalCurrentYoCBadge').innerText = `통합 현재 매수가배당률: ${totalCurrentYoC.toFixed(2)}%`;
 
             let solSharesDRIP = initialSolShares;
             let solPriceDRIP = solPrice;
@@ -812,7 +947,6 @@
                     const totalValuation = solVal + schdValKRW;
 
                     const cumulativeSolInvested = solPrincipal + (solMonthlyInvest * m);
-                    // SCHD 원금은 매입환율 기준 누적
                     const cumulativeSchdInvestedKRW = (schdPrincipalUSD + (schdMonthlyInvest * m)) * schdBuyExRate;
                     const totalPrincipal = cumulativeSolInvested + cumulativeSchdInvestedKRW;
 
@@ -861,7 +995,6 @@
             const totalReinvestedKRW = totalSolReinvestedDivKRW + (totalSchdReinvestedDivUSD * exRate);
 
             const futureYoC = initialDivYield * Math.pow(1 + divGrowthRate, yearsNum) * 100;
-            const marketYield = initialDivYield * 100;
 
             const inflationDiscountFactor = Math.pow(1 + inflationRate, yearsNum);
             const realGrandValuation = grandValuationDRIP / inflationDiscountFactor;
@@ -919,16 +1052,16 @@
 
             document.getElementById('solResVal').innerText = "₩ " + Math.round(solValuationDRIP).toLocaleString();
             document.getElementById('solResDivText').innerText = "월 배당: ₩ " + Math.round(solMonthlyDivDRIP).toLocaleString() + " / 월";
-            document.getElementById('solMarketYieldBadge').innerText = `시가배당률: ${marketYield.toFixed(2)}%`;
-            document.getElementById('solYoCBadge').innerText = `매수가배당률: ${futureYoC.toFixed(2)}%`;
+            document.getElementById('solMarketYieldBadge').innerText = `현재 시가배당률: ${solLiveMarketYield.toFixed(2)}%`;
+            document.getElementById('solYoCBadge').innerText = `현재 매수가배당률: ${solLiveCurrentYoC.toFixed(2)}%`;
             document.getElementById('solResShares').innerText = Math.round(solSharesDRIP).toLocaleString() + " 주";
             document.getElementById('solReinvestedDiv').innerText = "₩ " + Math.round(totalSolReinvestedDivKRW).toLocaleString();
             document.getElementById('solDripShares').innerText = "+ " + Math.round(solDripSharesGained).toLocaleString() + " 주";
 
             document.getElementById('schdResVal').innerText = "$" + Math.round(schdValuationUSD_DRIP).toLocaleString() + " (₩" + Math.round(schdValuationKRW_DRIP).toLocaleString() + ")";
             document.getElementById('schdResDivText').innerText = "월 배당: $" + Math.round(schdMonthlyDivUSD_DRIP).toLocaleString() + " (₩" + Math.round(schdMonthlyDivKRW_DRIP).toLocaleString() + ") / 월";
-            document.getElementById('schdMarketYieldBadge').innerText = `시가배당률: ${marketYield.toFixed(2)}%`;
-            document.getElementById('schdYoCBadge').innerText = `매수가배당률: ${futureYoC.toFixed(2)}%`;
+            document.getElementById('schdMarketYieldBadge').innerText = `현재 시가배당률: ${schdLiveMarketYield.toFixed(2)}%`;
+            document.getElementById('schdYoCBadge').innerText = `현재 매수가배당률: ${schdLiveCurrentYoC.toFixed(2)}%`;
             document.getElementById('schdResShares').innerText = Math.round(schdSharesDRIP).toLocaleString() + " 주";
             document.getElementById('schdReinvestedDiv').innerText = "$" + Math.round(totalSchdReinvestedDivUSD).toLocaleString() + " (₩" + Math.round(totalSchdReinvestedDivUSD * exRate).toLocaleString() + ")";
             document.getElementById('schdDripShares').innerText = "+ " + Math.round(schdDripSharesGained).toLocaleString() + " 주";
@@ -1239,7 +1372,7 @@
             }
         }
 
-        // 접속 시 구글시트 자산 데이터와 실시간 주가/환율을 동시에 자동 연동
+        // 접속 시 구글시트 '은퇴자산관리' 탭(13행 SOL / 14행 SCHD) 및 실시간 주가/환율 자동 연동
         window.onload = async function() {
             initRetirementMonths();
             await fetchGoogleSheetsData();
