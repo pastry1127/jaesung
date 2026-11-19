@@ -324,7 +324,7 @@
                 </div>
             </div>
 
-            <!-- Current Live Dividend Yield & Current YoC Summary Bar (배당 재투자 복리 분석 아래 이동 / SOL -> SCHD 순서) -->
+            <!-- Current Live Dividend Yield & Current YoC Summary Bar -->
             <div class="bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-4 space-y-3">
                 <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/80 dark:border-slate-700 pb-2">
                     <span class="text-xs font-extrabold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
@@ -335,7 +335,7 @@
                     </span>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                    <!-- SOL 현재 배당률 및 연배당금 (먼저 배치) -->
+                    <!-- SOL 현재 배당률 및 연배당금 -->
                     <div class="bg-white dark:bg-slate-900/90 p-3 rounded-xl border border-blue-200/70 dark:border-blue-900/50 space-y-2">
                         <div class="flex justify-between items-center">
                             <span class="font-bold text-blue-800 dark:text-blue-300">🇰🇷 SOL 미국배당다우존스 현재</span>
@@ -358,7 +358,7 @@
                         </div>
                     </div>
 
-                    <!-- SCHD 현재 배당률 및 연배당금 (다음 배치) -->
+                    <!-- SCHD 현재 배당률 및 연배당금 -->
                     <div class="bg-white dark:bg-slate-900/90 p-3 rounded-xl border border-emerald-200/70 dark:border-emerald-900/50 space-y-2">
                         <div class="flex justify-between items-center">
                             <span class="font-bold text-emerald-800 dark:text-emerald-300">🇺🇸 SCHD 현재 배당률</span>
@@ -527,7 +527,6 @@
             });
         }
 
-        // 구글 스프레드시트 '은퇴자산관리' 탭 (SOL: 13행, SCHD: 14행) 데이터 연동
         async function fetchGoogleSheetsData() {
             const statusMsg = document.getElementById('apiStatusMessage');
             let rawText = '';
@@ -563,7 +562,6 @@
             try {
                 const rows = parseCsvRows(rawText);
 
-                // 13행 (0-based index 12): SOL 미국배당다우존스
                 if (rows.length > 12) {
                     const solRow = rows[12];
                     const solSharesVal = parseFloat(solRow[1]?.replace(/[^0-9.-]/g, ''));
@@ -585,7 +583,6 @@
                     }
                 }
 
-                // 14행 (0-based index 13): SCHD 미국직투
                 if (rows.length > 13) {
                     const schdRow = rows[13];
                     const schdSharesVal = parseFloat(schdRow[1]?.replace(/[^0-9.-]/g, ''));
@@ -960,15 +957,8 @@
                     const yearsPassed = m / 12;
                     const currentMonthlyDivReal = currentMonthlyDivNominal / Math.pow(1 + inflationRate, yearsPassed);
 
+                    // 차트 연도별 미래 매수가배당률(YoC): 예측용 시가배당률 * (1 + 연 배당성장률)^경과연수
                     const currentYoC = initialDivYield * Math.pow(1 + divGrowthRate, yearsPassed) * 100;
-
-                    // 연도별 미래 매수가배당률 (각 연도 말 기준 보유주수·연배당금 / 누적 투입원금)
-                    const solAnnualGrossAtYear = solSharesDRIP * solPriceDRIP * solDivYieldDRIP;
-                    const solYearlyYoC = cumulativeSolInvested > 0 ? (solAnnualGrossAtYear / cumulativeSolInvested) * 100 : 0;
-
-                    const cumulativeSchdInvestedUSD = schdPrincipalUSD + (schdMonthlyInvest * m);
-                    const schdAnnualGrossAtYearUSD = schdSharesDRIP * schdPriceDRIP * schdDivYieldDRIP;
-                    const schdYearlyYoC = cumulativeSchdInvestedUSD > 0 ? (schdAnnualGrossAtYearUSD / cumulativeSchdInvestedUSD) * 100 : 0;
 
                     yearlyChartData.push({
                         yearLabel: curYearLabel,
@@ -981,9 +971,7 @@
                         monthlyDivReal: Math.round(currentMonthlyDivReal),
                         solMonthlyDivNominal: Math.round(currentSolMonthlyDivNominal),
                         schdMonthlyDivNominal: Math.round(currentSchdMonthlyDivNominal),
-                        yoc: parseFloat(currentYoC.toFixed(2)),
-                        solYearlyYoC: parseFloat(solYearlyYoC.toFixed(2)),
-                        schdYearlyYoC: parseFloat(schdYearlyYoC.toFixed(2))
+                        yoc: parseFloat(currentYoC.toFixed(2))
                     });
                 }
             }
@@ -998,23 +986,20 @@
 
             const solValuationDRIP = solSharesDRIP * solPriceDRIP;
             const solMonthlyDivDRIP = (solValuationDRIP * solDivYieldDRIP / 12) * (1 - TAX_RATE);
-            const solFutureYearlyYoC = latestYearPoint
-                ? latestYearPoint.solYearlyYoC
-                : (grandSolPrincipalKRW > 0 ? ((solValuationDRIP * solDivYieldDRIP) / grandSolPrincipalKRW) * 100 : 0);
 
             const schdValuationUSD_DRIP = schdSharesDRIP * schdPriceDRIP;
             const schdMonthlyDivUSD_DRIP = (schdValuationUSD_DRIP * schdDivYieldDRIP / 12) * (1 - TAX_RATE);
             const schdValuationKRW_DRIP = schdValuationUSD_DRIP * exRate;
             const schdMonthlyDivKRW_DRIP = schdMonthlyDivUSD_DRIP * exRate;
-            const schdFutureYearlyYoC = latestYearPoint
-                ? latestYearPoint.schdYearlyYoC
-                : (grandSchdPrincipalUSD > 0 ? ((schdValuationUSD_DRIP * schdDivYieldDRIP) / grandSchdPrincipalUSD) * 100 : 0);
 
             const grandValuationDRIP = solValuationDRIP + schdValuationKRW_DRIP;
             const grandMonthlyDivDRIP = solMonthlyDivDRIP + schdMonthlyDivKRW_DRIP;
             const totalReinvestedKRW = totalSolReinvestedDivKRW + (totalSchdReinvestedDivUSD * exRate);
 
+            // 미래 연도별 매수가배당률(YoC): 차트 YoC와 동일 기준으로 산출(168개월 / 14년 기준 10.28%)
             const futureYoC = initialDivYield * Math.pow(1 + divGrowthRate, yearsNum) * 100;
+            const solFutureYearlyYoC = futureYoC;
+            const schdFutureYearlyYoC = futureYoC;
 
             const inflationDiscountFactor = Math.pow(1 + inflationRate, yearsNum);
             const realGrandValuation = grandValuationDRIP / inflationDiscountFactor;
@@ -1392,7 +1377,6 @@
             }
         }
 
-        // 접속 시 구글시트 '은퇴자산관리' 탭(13행 SOL / 14행 SCHD) 및 실시간 주가/환율 자동 연동
         window.onload = async function() {
             initRetirementMonths();
             await fetchGoogleSheetsData();
