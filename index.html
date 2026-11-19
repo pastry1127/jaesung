@@ -90,12 +90,17 @@
             </div>
         </div>
 
-        <!-- Forecast Months Input with Dynamic Target Date Calculation -->
+        <!-- Forecast Months Input with Live Today Date & Dynamic Target Date Calculation -->
         <div class="bg-indigo-50/50 dark:bg-indigo-950/30 p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/50 space-y-2">
-            <div class="flex justify-between items-center">
-                <label for="futureMonths" class="text-xs font-bold text-indigo-900 dark:text-indigo-300">
-                    🗓️ 예측 기간 ( 개월 )
-                </label>
+            <div class="flex flex-wrap justify-between items-center gap-2">
+                <div class="flex flex-wrap items-center gap-2">
+                    <label for="futureMonths" class="text-xs font-bold text-indigo-900 dark:text-indigo-300">
+                        🗓️ 예측 기간 ( 개월 )
+                    </label>
+                    <span id="todayDateBadge" class="inline-block bg-white dark:bg-slate-800 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 text-[11px] font-semibold px-2.5 py-0.5 rounded-full">
+                        기준: -
+                    </span>
+                </div>
                 <span id="targetDateBadge" class="inline-block bg-indigo-600 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-sm">
                     2040년 11월 (14.0년 후)
                 </span>
@@ -456,6 +461,8 @@
         let chartInstance = null;
         let currentChartMode = 'asset'; // 'asset', 'div', or 'yoc'
         let yearlyChartData = [];
+        let lastCheckedDateKey = '';
+        let midnightTimerId = null;
 
         function toggleTheme() {
             const html = document.documentElement;
@@ -473,6 +480,54 @@
             }
             renderChart();
         }
+
+        function renderTodayDate() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = now.getMonth() + 1;
+            const d = now.getDate();
+            const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+            const dayName = weekdays[now.getDay()];
+
+            const badge = document.getElementById('todayDateBadge');
+            if (badge) {
+                badge.innerText = `기준: ${y}년 ${m}월 ${d}일 (${dayName})`;
+            }
+            return `${y}-${m}-${d}`;
+        }
+
+        function checkDateRollover() {
+            const now = new Date();
+            const currentKey = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+            if (lastCheckedDateKey && lastCheckedDateKey !== currentKey) {
+                const prevMonthPart = lastCheckedDateKey.split('-').slice(0, 2).join('-');
+                const currMonthPart = `${now.getFullYear()}-${now.getMonth() + 1}`;
+                renderTodayDate();
+                if (prevMonthPart !== currMonthPart) {
+                    initRetirementMonths();
+                }
+                update();
+            }
+            lastCheckedDateKey = currentKey;
+        }
+
+        function scheduleMidnightRefresh() {
+            if (midnightTimerId) clearTimeout(midnightTimerId);
+            const now = new Date();
+            const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1);
+            const msUntilMidnight = Math.max(1000, nextMidnight - now);
+
+            midnightTimerId = setTimeout(() => {
+                checkDateRollover();
+                scheduleMidnightRefresh();
+            }, msUntilMidnight);
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                checkDateRollover();
+            }
+        });
 
         function initRetirementMonths() {
             const now = new Date();
@@ -1377,6 +1432,8 @@
         }
 
         window.onload = async function() {
+            lastCheckedDateKey = renderTodayDate();
+            scheduleMidnightRefresh();
             initRetirementMonths();
             await fetchGoogleSheetsData();
             await fetchLiveMarketData();
