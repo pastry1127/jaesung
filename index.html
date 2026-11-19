@@ -486,7 +486,7 @@
             const totalTargetMonths = targetYear * 12 + targetMonth;
 
             let diffMonths = totalTargetMonths - totalCurrentMonths;
-            if (diffMonths < 1) diffMonths = 1;
+            if (diffMonths < 1) diffMonths = 120;
 
             document.getElementById('futureMonths').value = diffMonths;
         }
@@ -873,7 +873,6 @@
             const schdMonthlyInvest = parseFormattedNumber(document.getElementById('schdMonthlyInvest').value) || 0;
             let schdPrincipalUSD = parseFormattedNumber(document.getElementById('schdPrincipalUSD').value) || 26118.56;
 
-            // 현재 실시간 시가배당률 및 현재 매수가 배당률(YoC) 계산
             const schdLiveMarketYield = schdPrice > 0 ? (schdAnnualDivPerShare / schdPrice) * 100 : 0;
             const schdLiveCurrentYoC = schdAvgPrice > 0 ? (schdAnnualDivPerShare / schdAvgPrice) * 100 : 0;
 
