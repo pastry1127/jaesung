@@ -398,7 +398,7 @@
                         
                         <div class="flex flex-wrap items-center gap-1.5 pt-1">
                             <span class="text-[10px] bg-slate-200/80 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded-md font-semibold" id="solMarketYieldBadge">현재 시가배당률: 3.24%</span>
-                            <span class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-md font-bold shadow-sm" id="solYoCBadge">현재 매수가배당률: 3.91%</span>
+                            <span class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-md font-bold shadow-sm" id="solYoCBadge">미래 연도별 매수가배당률: 0.00%</span>
                         </div>
                     </div>
                     <div class="bg-white/80 dark:bg-slate-800/80 p-2.5 rounded-lg border border-blue-100 dark:border-blue-900/40 text-[11px] space-y-1">
@@ -426,7 +426,7 @@
                         
                         <div class="flex flex-wrap items-center gap-1.5 pt-1">
                             <span class="text-[10px] bg-slate-200/80 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded-md font-semibold" id="schdMarketYieldBadge">현재 시가배당률: 2.98%</span>
-                            <span class="text-[10px] bg-emerald-600 text-white px-2 py-0.5 rounded-md font-bold shadow-sm" id="schdYoCBadge">현재 매수가배당률: 3.33%</span>
+                            <span class="text-[10px] bg-emerald-600 text-white px-2 py-0.5 rounded-md font-bold shadow-sm" id="schdYoCBadge">미래 연도별 매수가배당률: 0.00%</span>
                         </div>
                     </div>
                     <div class="bg-white/80 dark:bg-slate-800/80 p-2.5 rounded-lg border border-emerald-100 dark:border-emerald-900/40 text-[11px] space-y-1">
@@ -962,8 +962,17 @@
 
                     const currentYoC = initialDivYield * Math.pow(1 + divGrowthRate, yearsPassed) * 100;
 
+                    // 연도별 미래 매수가배당률 (각 연도 말 기준 보유주수·연배당금 / 누적 투입원금)
+                    const solAnnualGrossAtYear = solSharesDRIP * solPriceDRIP * solDivYieldDRIP;
+                    const solYearlyYoC = cumulativeSolInvested > 0 ? (solAnnualGrossAtYear / cumulativeSolInvested) * 100 : 0;
+
+                    const cumulativeSchdInvestedUSD = schdPrincipalUSD + (schdMonthlyInvest * m);
+                    const schdAnnualGrossAtYearUSD = schdSharesDRIP * schdPriceDRIP * schdDivYieldDRIP;
+                    const schdYearlyYoC = cumulativeSchdInvestedUSD > 0 ? (schdAnnualGrossAtYearUSD / cumulativeSchdInvestedUSD) * 100 : 0;
+
                     yearlyChartData.push({
                         yearLabel: curYearLabel,
+                        yearIndex: Math.ceil(yearsPassed),
                         principal: Math.round(totalPrincipal),
                         reinvestedDiv: Math.round(totalReinvested),
                         capitalGain: Math.round(capitalGain),
@@ -972,10 +981,15 @@
                         monthlyDivReal: Math.round(currentMonthlyDivReal),
                         solMonthlyDivNominal: Math.round(currentSolMonthlyDivNominal),
                         schdMonthlyDivNominal: Math.round(currentSchdMonthlyDivNominal),
-                        yoc: parseFloat(currentYoC.toFixed(2))
+                        yoc: parseFloat(currentYoC.toFixed(2)),
+                        solYearlyYoC: parseFloat(solYearlyYoC.toFixed(2)),
+                        schdYearlyYoC: parseFloat(schdYearlyYoC.toFixed(2))
                     });
                 }
             }
+
+            const latestYearPoint = yearlyChartData.length > 0 ? yearlyChartData[yearlyChartData.length - 1] : null;
+            const displayYearNum = latestYearPoint ? latestYearPoint.yearIndex : Math.max(1, Math.ceil(yearsNum));
 
             const grandSolPrincipalKRW = solPrincipal + (solMonthlyInvest * monthsInput);
             const grandSchdPrincipalUSD = schdPrincipalUSD + (schdMonthlyInvest * monthsInput);
@@ -984,11 +998,17 @@
 
             const solValuationDRIP = solSharesDRIP * solPriceDRIP;
             const solMonthlyDivDRIP = (solValuationDRIP * solDivYieldDRIP / 12) * (1 - TAX_RATE);
+            const solFutureYearlyYoC = latestYearPoint
+                ? latestYearPoint.solYearlyYoC
+                : (grandSolPrincipalKRW > 0 ? ((solValuationDRIP * solDivYieldDRIP) / grandSolPrincipalKRW) * 100 : 0);
 
             const schdValuationUSD_DRIP = schdSharesDRIP * schdPriceDRIP;
             const schdMonthlyDivUSD_DRIP = (schdValuationUSD_DRIP * schdDivYieldDRIP / 12) * (1 - TAX_RATE);
             const schdValuationKRW_DRIP = schdValuationUSD_DRIP * exRate;
             const schdMonthlyDivKRW_DRIP = schdMonthlyDivUSD_DRIP * exRate;
+            const schdFutureYearlyYoC = latestYearPoint
+                ? latestYearPoint.schdYearlyYoC
+                : (grandSchdPrincipalUSD > 0 ? ((schdValuationUSD_DRIP * schdDivYieldDRIP) / grandSchdPrincipalUSD) * 100 : 0);
 
             const grandValuationDRIP = solValuationDRIP + schdValuationKRW_DRIP;
             const grandMonthlyDivDRIP = solMonthlyDivDRIP + schdMonthlyDivKRW_DRIP;
@@ -1053,7 +1073,7 @@
             document.getElementById('solResVal').innerText = "₩ " + Math.round(solValuationDRIP).toLocaleString();
             document.getElementById('solResDivText').innerText = "월 배당: ₩ " + Math.round(solMonthlyDivDRIP).toLocaleString() + " / 월";
             document.getElementById('solMarketYieldBadge').innerText = `현재 시가배당률: ${solLiveMarketYield.toFixed(2)}%`;
-            document.getElementById('solYoCBadge').innerText = `현재 매수가배당률: ${solLiveCurrentYoC.toFixed(2)}%`;
+            document.getElementById('solYoCBadge').innerText = `미래 ${displayYearNum}년차 매수가배당률: ${solFutureYearlyYoC.toFixed(2)}%`;
             document.getElementById('solResShares').innerText = Math.round(solSharesDRIP).toLocaleString() + " 주";
             document.getElementById('solReinvestedDiv').innerText = "₩ " + Math.round(totalSolReinvestedDivKRW).toLocaleString();
             document.getElementById('solDripShares').innerText = "+ " + Math.round(solDripSharesGained).toLocaleString() + " 주";
@@ -1061,7 +1081,7 @@
             document.getElementById('schdResVal').innerText = "$" + Math.round(schdValuationUSD_DRIP).toLocaleString() + " (₩" + Math.round(schdValuationKRW_DRIP).toLocaleString() + ")";
             document.getElementById('schdResDivText').innerText = "월 배당: $" + Math.round(schdMonthlyDivUSD_DRIP).toLocaleString() + " (₩" + Math.round(schdMonthlyDivKRW_DRIP).toLocaleString() + ") / 월";
             document.getElementById('schdMarketYieldBadge').innerText = `현재 시가배당률: ${schdLiveMarketYield.toFixed(2)}%`;
-            document.getElementById('schdYoCBadge').innerText = `현재 매수가배당률: ${schdLiveCurrentYoC.toFixed(2)}%`;
+            document.getElementById('schdYoCBadge').innerText = `미래 ${displayYearNum}년차 매수가배당률: ${schdFutureYearlyYoC.toFixed(2)}%`;
             document.getElementById('schdResShares').innerText = Math.round(schdSharesDRIP).toLocaleString() + " 주";
             document.getElementById('schdReinvestedDiv').innerText = "$" + Math.round(totalSchdReinvestedDivUSD).toLocaleString() + " (₩" + Math.round(totalSchdReinvestedDivUSD * exRate).toLocaleString() + ")";
             document.getElementById('schdDripShares').innerText = "+ " + Math.round(schdDripSharesGained).toLocaleString() + " 주";
